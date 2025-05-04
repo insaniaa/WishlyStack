@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">WishlyStack</string>
+    <string name="list_kosong">Belum ada data</string>
+    <string name="x_diklik">%1$s diklik!</string>
+    <string name="tambah_daftar">Tambah daftar keinginan</string>
+    <string name="judul">Judul</string>
+    <string name="isi_daftar">Isi daftar keinginan</string>
+    <string name="kembali">Kembali</string>
+    <string name="simpan">Simpan</string>
+    <string name="edit_daftar">Ubah daftar keinginan</string>
+    <string name="invalid">Judul dan isi daftar keinginan tidak boleh kosong</string>
+    <string name="lainnya">Opsi lainnya</string>
+    <string name="hapus">Hapus daftar keinginan</string>
+    <string name="pesan_hapus">Hapus daftar keinginan ini?</string>
+    <string name="tombol_hapus">Hapus</string>
+    <string name="tombol_batal">Batal</string>
+    <string name="list">Tampilan List</string>
+    <string name="info">Tampilan info</string>
+    <string name="grid">Tampilan grid</string>
 </resources>
