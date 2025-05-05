@@ -201,7 +201,10 @@ fun FormScreen(
             )
 
             Button(
-                onClick = { /* Submit handler */ },
+                onClick = {
+                    // Handle form submission here, e.g., saving data
+                    // You can pass the form data to the ViewModel or API
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),

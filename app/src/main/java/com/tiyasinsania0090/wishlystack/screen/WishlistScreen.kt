@@ -43,7 +43,7 @@ fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Optional Info Screen */ }) {
+                    IconButton(onClick = { navController.navigate(Screen.About.route) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_info_outline_24),
                             contentDescription = "Info"
@@ -104,3 +104,4 @@ fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
         }
     }
 }
+

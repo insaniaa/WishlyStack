@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.tiyasinsania0090.wishlystack.screen.AboutScreen
 import com.tiyasinsania0090.wishlystack.screen.FormScreen
 import com.tiyasinsania0090.wishlystack.screen.MainViewModel
 import com.tiyasinsania0090.wishlystack.screen.Screen
@@ -28,8 +29,12 @@ fun AppNavGraph(
         composable(route = Screen.Form.route) {
             FormScreen(
                 onListClick = { navController.navigate(Screen.Wishlist.route) },
-                onInfoClick = { /* Tambahkan nanti jika ada screen info */ }
+                onInfoClick = { navController.navigate(Screen.About.route) }
             )
+        }
+
+        composable(route = Screen.About.route) {
+            AboutScreen(onBack = { navController.popBackStack() })
         }
     }
 }
