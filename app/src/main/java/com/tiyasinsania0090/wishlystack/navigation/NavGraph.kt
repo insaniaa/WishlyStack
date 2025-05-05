@@ -19,11 +19,17 @@ fun AppNavGraph(
         startDestination = Screen.Wishlist.route
     ) {
         composable(route = Screen.Wishlist.route) {
-            WishlistScreen(wishList = viewModel.wishList, navController = navController)
+            WishlistScreen(
+                wishList = viewModel.wishList,
+                navController = navController
+            )
         }
 
         composable(route = Screen.Form.route) {
-            FormScreen(onSubmit = { navController.navigate(Screen.Wishlist.route) })
+            FormScreen(
+                onListClick = { navController.navigate(Screen.Wishlist.route) },
+                onInfoClick = { /* Tambahkan nanti jika ada screen info */ }
+            )
         }
     }
 }
