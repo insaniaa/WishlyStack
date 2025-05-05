@@ -14,7 +14,11 @@ import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.model.Wish
 
 @Composable
-fun WishItem(wish: Wish, isGrid: Boolean = false) {
+fun WishItem(
+    wish: Wish,
+    isGrid: Boolean = false,
+    onDetailClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .padding(horizontal = if (isGrid) 4.dp else 16.dp, vertical = 8.dp)
@@ -37,18 +41,15 @@ fun WishItem(wish: Wish, isGrid: Boolean = false) {
                         .height(100.dp)
                         .clip(RoundedCornerShape(12.dp))
                 )
+                Text(text = wish.name, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = wish.name,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = wish.notes,
+                    text = wish.description,
                     maxLines = 1,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
                 Button(
-                    onClick = { /* TODO: handle detail action */ },
+                    onClick = onDetailClick,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E4B8B)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -70,19 +71,16 @@ fun WishItem(wish: Wish, isGrid: Boolean = false) {
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
+                    Text(text = wish.name, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = wish.name,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = wish.notes,
+                        text = wish.description,
                         maxLines = 1,
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                        onClick = { /* TODO: handle detail action */ },
+                        onClick = onDetailClick,
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E4B8B))
                     ) {
                         Text("Details")

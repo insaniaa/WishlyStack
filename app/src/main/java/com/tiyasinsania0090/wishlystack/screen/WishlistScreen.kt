@@ -80,12 +80,15 @@ fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
                 .fillMaxSize()
         ) { isList ->
             if (isList) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
+                LazyColumn {
                     items(wishList) { wish ->
-                        WishItem(wish = wish, isGrid = false)
+                        WishItem(
+                            wish = wish,
+                            isGrid = false,
+                            onDetailClick = {
+                                navController.navigate("detail/${wish.id}")
+                            }
+                        )
                     }
                 }
             } else {
@@ -97,11 +100,16 @@ fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(wishList) { wish ->
-                        WishItem(wish = wish, isGrid = true)
+                        WishItem(
+                            wish = wish,
+                            isGrid = true,
+                            onDetailClick = {
+                                navController.navigate("detail/${wish.id}")
+                            }
+                        )
                     }
                 }
             }
         }
     }
 }
-

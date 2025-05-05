@@ -6,5 +6,5 @@ data class Wish(
     val type: String,
     val price: String,
     val priority: String,
-    val notes: String
+    val description: String,
 )
