@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.tiyasinsania0090.wishlystack.component.WishItem
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.model.Wish
@@ -26,7 +26,7 @@ import com.tiyasinsania0090.wishlystack.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WishlistScreen(wishList: List<Wish>) {
+fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
     var showList by remember { mutableStateOf(true) }
 
     Scaffold(
@@ -43,7 +43,7 @@ fun WishlistScreen(wishList: List<Wish>) {
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Arahkan ke info screen */ }) {
+                    IconButton(onClick = { /* Optional Info Screen */ }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_info_outline_24),
                             contentDescription = "Info"
@@ -65,8 +65,8 @@ fun WishlistScreen(wishList: List<Wish>) {
         },
         bottomBar = {
             BottomBar(
-                onFormClick = { /* Arahkan ke screen form */ },
-                onListClick = { /* Arahkan ke screen list */ }
+                onFormClick = { navController.navigate(Screen.Form.route) },
+                onListClick = { navController.navigate(Screen.Wishlist.route) }
             )
         }
     ) { padding ->
@@ -103,15 +103,4 @@ fun WishlistScreen(wishList: List<Wish>) {
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WishlistScreenPreview() {
-    WishlistScreen(
-        wishList = listOf(
-            Wish(1, "Laptop Baru", "Elektronik", "15000000", "Tinggi", "Untuk kuliah"),
-            Wish(2, "Kamera", "Elektronik", "3000000", "Sedang", "Untuk dokumentasi")
-        )
-    )
 }

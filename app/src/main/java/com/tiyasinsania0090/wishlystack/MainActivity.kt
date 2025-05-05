@@ -4,8 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.tiyasinsania0090.wishlystack.navigation.AppNavGraph
 import com.tiyasinsania0090.wishlystack.screen.MainViewModel
-import com.tiyasinsania0090.wishlystack.screen.WishlistScreen
 import com.tiyasinsania0090.wishlystack.ui.theme.WishlyStackTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,8 +14,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WishlyStackTheme {
+                val navController = rememberNavController()
                 val viewModel: MainViewModel = viewModel()
-                WishlistScreen(wishList = viewModel.wishList)
+
+                AppNavGraph(
+                    navController = navController,
+                    viewModel = viewModel
+                )
             }
         }
     }
