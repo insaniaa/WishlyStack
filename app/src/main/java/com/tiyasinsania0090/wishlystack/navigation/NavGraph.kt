@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.tiyasinsania0090.wishlystack.screen.AboutScreen
 import com.tiyasinsania0090.wishlystack.screen.DetailScreen
+import com.tiyasinsania0090.wishlystack.screen.EditScreen
 import com.tiyasinsania0090.wishlystack.screen.FormScreen
 import com.tiyasinsania0090.wishlystack.screen.MainViewModel
 import com.tiyasinsania0090.wishlystack.screen.Screen
@@ -56,5 +57,21 @@ fun AppNavGraph(
                 navController = navController
             )
         }
+
+        composable(
+            route = "edit/{wishId}",
+            arguments = listOf(navArgument("wishId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val wishId = backStackEntry.arguments?.getInt("wishId") ?: -1
+            EditScreen(
+                wishId = wishId,
+                wishList = viewModel.wishList,
+                onUpdateWish = { updatedWish ->
+                    viewModel.updateWish(updatedWish)
+                },
+                navController = navController
+            )
+        }
+
     }
 }

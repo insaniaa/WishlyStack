@@ -23,16 +23,33 @@ fun DetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Wish") },
+                title = { Text("Wishlist") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
-                            contentDescription = "Back",
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        // Navigasi ke Edit (kalau ada)
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_edit_24),
+                            contentDescription = "Edit"
+                        )
+                    }
+                    IconButton(onClick = {
+                        // Aksi hapus
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_delete_24),
+                            contentDescription = "Delete"
                         )
                     }
                 }
-
             )
         }
     ) { padding ->
@@ -40,16 +57,67 @@ fun DetailScreen(
             Column(
                 modifier = Modifier
                     .padding(padding)
-                    .padding(16.dp)
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Nama: ${it.name}", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Harga: ${it.price}")
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Deskripsi: ${it.description}")
+                // Gambar item
+                Icon(
+                    painter = painterResource(id = R.drawable.cat), // ganti sesuai gambar kamu
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(180.dp)
+                        .padding(bottom = 16.dp)
+                )
+
+                // Nama item
+                Text(
+                    text = it.name,
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+                // Harga
+                Text(
+                    text = "Price: ${it.price}",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Kategori dan prioritas
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { /* do nothing */ },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(it.type)
+                    }
+                    Button(
+                        onClick = { /* do nothing */ },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(it.priority)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = it.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
             }
         } ?: run {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("Item tidak ditemukan")
             }
         }
