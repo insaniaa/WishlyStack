@@ -1,5 +1,6 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,40 +21,41 @@ fun DetailScreen(
 ) {
     val wish = wishList.find { it.id == wishId }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Wishlist") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
-                            contentDescription = "Back"
-                        )
+    wish?.let { item ->
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Wishlist") },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            navController.navigate(Screen.Edit.createRoute(item.id))
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_edit_24),
+                                contentDescription = "Edit"
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            // TODO: aksi hapus, misalnya dialog konfirmasi
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_delete_24),
+                                contentDescription = "Delete"
+                            )
+                        }
                     }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        // Navigasi ke Edit (kalau ada)
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_edit_24),
-                            contentDescription = "Edit"
-                        )
-                    }
-                    IconButton(onClick = {
-                        // Aksi hapus
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_delete_24),
-                            contentDescription = "Delete"
-                        )
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        wish?.let {
+                )
+            }
+        ) { padding ->
             Column(
                 modifier = Modifier
                     .padding(padding)
@@ -61,65 +63,60 @@ fun DetailScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Gambar item
-                Icon(
-                    painter = painterResource(id = R.drawable.cat), // ganti sesuai gambar kamu
-                    contentDescription = null,
+                // Gambar kucing (pakai Image, bukan Icon)
+                Image(
+                    painter = painterResource(id = R.drawable.cat),
+                    contentDescription = "Wish Image",
                     modifier = Modifier
                         .size(180.dp)
                         .padding(bottom = 16.dp)
                 )
 
-                // Nama item
                 Text(
-                    text = it.name,
+                    text = item.name,
                     style = MaterialTheme.typography.headlineSmall
                 )
 
-                // Harga
                 Text(
-                    text = "Price: ${it.price}",
+                    text = "Price: ${item.price}",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyLarge
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Kategori dan prioritas
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = { /* do nothing */ },
+                        onClick = {},
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text(it.type)
+                        Text(item.type)
                     }
                     Button(
-                        onClick = { /* do nothing */ },
+                        onClick = {},
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text(it.priority)
+                        Text(item.priority)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = it.description,
+                    text = item.description,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
-        } ?: run {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Item tidak ditemukan")
-            }
+        }
+    } ?: run {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Item tidak ditemukan")
         }
     }
 }
