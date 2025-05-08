@@ -7,9 +7,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -17,9 +17,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.saveable.rememberSaveable
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.component.BottomBar
+import com.tiyasinsania0090.wishlystack.component.SimpleDropdownSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,32 +33,36 @@ fun FormScreen(
     var selectedPriority by rememberSaveable { mutableStateOf("") }
     var notes by rememberSaveable { mutableStateOf("") }
 
-    var typeExpanded by remember { mutableStateOf(false) }
-    val typeOptions = listOf("Makanan", "Barang", "Lainnya")
+    var nameError by rememberSaveable { mutableStateOf(false) }
+    var typeError by rememberSaveable { mutableStateOf(false) }
+    var priorityError by rememberSaveable { mutableStateOf(false) }
 
-    var priorityExpanded by remember { mutableStateOf(false) }
+    val typeOptions = listOf("Makanan", "Barang", "Lainnya")
     val priorityOptions = listOf("Tinggi", "Sedang", "Rendah")
 
     Scaffold(
-        containerColor = Color(0xFFF5ECFF),
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BottomBar(
-                onFormClick = { /* current screen */ },
+                onFormClick = { /* Current screen */ },
                 onListClick = onListClick
             )
         },
         topBar = {
             TopAppBar(
-                title = { },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = onInfoClick) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_info_outline_24),
-                            contentDescription = "Info"
+                            contentDescription = "Info",
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF6A4699))
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     ) { padding ->
@@ -72,7 +76,7 @@ fun FormScreen(
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Row(
@@ -83,13 +87,13 @@ fun FormScreen(
                         Text(
                             "WishlyStack",
                             fontSize = 24.sp,
-                            color = Color(0xFF6A4699),
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             "Sometimes putting everything on a list can make it come true",
                             fontSize = 14.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Image(
@@ -105,123 +109,99 @@ fun FormScreen(
                 fontSize = 20.sp,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                color = Color(0xFF6A4699),
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
 
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
-                label = { Text("Wish Name") },
+                onValueChange = {
+                    name = it
+                    nameError = false
+                },
+                label = { Text("Nama Barang") },
+                isError = nameError,
                 modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors()
+                supportingText = {
+                    if (nameError) Text("Nama tidak boleh kosong", color = MaterialTheme.colorScheme.error)
+                }
             )
 
-            ExposedDropdownMenuBox(
-                expanded = typeExpanded,
-                onExpandedChange = { typeExpanded = !typeExpanded }
-            ) {
-                TextField(
-                    value = selectedType,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Type of Wish") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = typeExpanded,
-                    onDismissRequest = { typeExpanded = false }
-                ) {
-                    typeOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                selectedType = option
-                                typeExpanded = false
-                            }
-                        )
-                    }
+            SimpleDropdownSelector(
+                label = "Jenis",
+                options = typeOptions,
+                selectedOption = selectedType,
+                onOptionSelected = {
+                    selectedType = it
+                    typeError = false
                 }
+            )
+            if (typeError) {
+                Text(
+                    "Jenis tidak boleh kosong",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
 
             OutlinedTextField(
                 value = price,
                 onValueChange = { price = it },
-                label = { Text("Price (optional)") },
-                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Harga (opsional)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = textFieldColors()
+                modifier = Modifier.fillMaxWidth()
             )
 
-            ExposedDropdownMenuBox(
-                expanded = priorityExpanded,
-                onExpandedChange = { priorityExpanded = !priorityExpanded }
-            ) {
-                TextField(
-                    value = selectedPriority,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Priority") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = priorityExpanded)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = priorityExpanded,
-                    onDismissRequest = { priorityExpanded = false }
-                ) {
-                    priorityOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                selectedPriority = option
-                                priorityExpanded = false
-                            }
-                        )
-                    }
+            SimpleDropdownSelector(
+                label = "Prioritas",
+                options = priorityOptions,
+                selectedOption = selectedPriority,
+                onOptionSelected = {
+                    selectedPriority = it
+                    priorityError = false
                 }
+            )
+            if (priorityError) {
+                Text(
+                    "Prioritas tidak boleh kosong",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
 
             OutlinedTextField(
                 value = notes,
                 onValueChange = { notes = it },
-                label = { Text("Notes") },
+                label = { Text("Catatan") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
-                colors = textFieldColors()
+                maxLines = 5
             )
 
             Button(
                 onClick = {
-                    // Handle form submission here, e.g., saving data
-                    // You can pass the form data to the ViewModel or API
+                    nameError = name.isBlank()
+                    typeError = selectedType.isBlank()
+                    priorityError = selectedPriority.isBlank()
+
+                    if (!nameError && !typeError && !priorityError) {
+                        // Lakukan submit data di sini
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9466D0))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Submit", fontWeight = FontWeight.Bold)
             }
         }
     }
 }
-
-@Composable
-fun textFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = Color(0xFFD7BAF4),
-    unfocusedContainerColor = Color(0xFFD7BAF4),
-    disabledContainerColor = Color(0xFFD7BAF4)
-)
 
 @Preview(showBackground = true)
 @Composable
