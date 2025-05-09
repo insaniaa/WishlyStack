@@ -5,73 +5,60 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.tiyasinsania0090.wishlystack.screen.AboutScreen
-import com.tiyasinsania0090.wishlystack.screen.DetailScreen
-import com.tiyasinsania0090.wishlystack.screen.EditScreen
-import com.tiyasinsania0090.wishlystack.screen.FormScreen
-import com.tiyasinsania0090.wishlystack.screen.MainViewModel
-import com.tiyasinsania0090.wishlystack.screen.Screen
-import com.tiyasinsania0090.wishlystack.screen.SplashScreen
-import com.tiyasinsania0090.wishlystack.screen.WishlistScreen
+import com.tiyasinsania0090.wishlystack.screen.*
 
 @Composable
 fun AppNavGraph(
-    navController: NavHostController,
-    viewModel: MainViewModel
+    navController: NavHostController = rememberNavController(),
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Splash.route
-    ) {
-        composable(route = Screen.Splash.route) {
-            SplashScreen(navController = navController)
+    NavHost(navController = navController, startDestination = Screen.Splash.route) {
+        composable(Screen.Splash.route) {
+            SplashScreen(navController)
         }
-
-        composable(route = Screen.Form.route) {
+        composable(Screen.Form.route) {
             FormScreen(
                 onListClick = { navController.navigate(Screen.Wishlist.route) },
                 onInfoClick = { navController.navigate(Screen.About.route) }
             )
         }
-
-        composable(route = Screen.Wishlist.route) {
+        composable(Screen.Wishlist.route) {
             WishlistScreen(
-                wishList = viewModel.wishList,
                 navController = navController
             )
         }
-
-        composable(route = Screen.About.route) {
+        composable(Screen.About.route) {
             AboutScreen(onBack = { navController.popBackStack() })
         }
-
         composable(
             route = "detail/{wishId}",
             arguments = listOf(navArgument("wishId") { type = NavType.IntType })
         ) { backStackEntry ->
             val wishId = backStackEntry.arguments?.getInt("wishId") ?: -1
-            DetailScreen(
-                wishId = wishId,
-                wishList = viewModel.wishList,
-                navController = navController
-            )
+            DetailScreen(wishId, navController)
         }
-
+//        composable(
+//            route = "edit/{wishId}",
+//            arguments = listOf(navArgument("wishId") { type = NavType.IntType })
+//        ) { backStackEntry ->
+//            val wishId = backStackEntry.arguments?.getInt("wishId") ?: -1
+//            EditScreen(
+//                wishId = wishId,
+//                wishList = viewModel.data,
+//                categories = viewModel.categories,
+//                onUpdateWish = { viewModel.updateWish(it) },
+//                navController = navController
+//            )
+//        }
         composable(
-            route = "edit/{wishId}",
-            arguments = listOf(navArgument("wishId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val wishId = backStackEntry.arguments?.getInt("wishId") ?: -1
-            EditScreen(
-                wishId = wishId,
-                wishList = viewModel.wishList,
-                onUpdateWish = { updatedWish ->
-                    viewModel.updateWish(updatedWish)
-                },
-                navController = navController
+            route = Screen.Edit.route,
+            arguments = listOf(
+                navArgument(KEY_ID_WISH) { type = NavType.IntType }
             )
+        ){ navBackStackEntry ->
+            val id = navBackStackEntry.arguments?.getInt(KEY_ID_WISH)
+            EditScreen(navController, id)
         }
-
     }
 }

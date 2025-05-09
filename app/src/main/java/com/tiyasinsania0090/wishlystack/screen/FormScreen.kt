@@ -10,26 +10,34 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.component.SimpleDropdownSelector
+import com.tiyasinsania0090.wishlystack.model.Wish
+import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormScreen(
     onListClick: () -> Unit,
-    onInfoClick: () -> Unit
+    onInfoClick: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+    val viewModel: WishViewModel = viewModel(factory = factory)
+    val data by viewModel.allWish.collectAsState()
+
     var name by rememberSaveable { mutableStateOf("") }
     var selectedType by rememberSaveable { mutableStateOf("") }
-    var price by rememberSaveable { mutableStateOf("") }
     var selectedPriority by rememberSaveable { mutableStateOf("") }
     var notes by rememberSaveable { mutableStateOf("") }
 
@@ -37,14 +45,18 @@ fun FormScreen(
     var typeError by rememberSaveable { mutableStateOf(false) }
     var priorityError by rememberSaveable { mutableStateOf(false) }
 
-    val typeOptions = listOf("Makanan", "Barang", "Lainnya")
+    val categoryOptions = listOf("Makanan", "Barang", "Lainnya")
     val priorityOptions = listOf("Tinggi", "Sedang", "Rendah")
 
+    var price by rememberSaveable { mutableStateOf("") }
+    var priceError by rememberSaveable { mutableStateOf(false) }
+
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BottomBar(
-                onFormClick = { /* Current screen */ },
+                onFormClick = { /* Stay on form */ },
                 onListClick = onListClick
             )
         },
@@ -129,7 +141,7 @@ fun FormScreen(
 
             SimpleDropdownSelector(
                 label = "Jenis",
-                options = typeOptions,
+                options = categoryOptions,
                 selectedOption = selectedType,
                 onOptionSelected = {
                     selectedType = it
@@ -146,11 +158,19 @@ fun FormScreen(
 
             OutlinedTextField(
                 value = price,
-                onValueChange = { price = it },
-                label = { Text("Harga (opsional)") },
+                onValueChange = {
+                    price = it
+                    priceError = false
+                },
+                label = { Text("Harga") },
+                isError = priceError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                supportingText = {
+                    if (priceError) Text("Harga tidak boleh kosong atau bukan angka", color = MaterialTheme.colorScheme.error)
+                }
             )
+
 
             SimpleDropdownSelector(
                 label = "Prioritas",
@@ -184,9 +204,27 @@ fun FormScreen(
                     nameError = name.isBlank()
                     typeError = selectedType.isBlank()
                     priorityError = selectedPriority.isBlank()
+                    priceError = price.isBlank() || price.toDoubleOrNull() == null
 
-                    if (!nameError && !typeError && !priorityError) {
-                        // Lakukan submit data di sini
+                    if (!nameError && !typeError && !priorityError && !priceError) {
+                        val wish = Wish(
+                            name = name,
+                            categoryId = 0,
+                            price = price.toDouble(),
+                            priority = selectedPriority,
+                            description = notes
+                        )
+
+                        coroutineScope.launch {
+                            viewModel.insert(
+                                name = name,
+                                categoryId = 0,
+                                price = price.toDouble(),
+                                priority = selectedPriority,
+                                description = notes
+                            )
+                            onListClick()
+                        }
                     }
                 },
                 modifier = Modifier
@@ -201,13 +239,4 @@ fun FormScreen(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FormScreenPreview() {
-    FormScreen(
-        onListClick = {},
-        onInfoClick = {}
-    )
 }

@@ -16,18 +16,27 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.tiyasinsania0090.wishlystack.component.WishItem
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.R
+import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
+import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
+fun WishlistScreen(navController: NavHostController) {
     var showList by remember { mutableStateOf(true) }
+
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+    val viewModel: WishViewModel = viewModel(factory = factory)
+    val data by viewModel.allWish.collectAsState()
 
     Scaffold(
         containerColor = Color(0xFFF7F1FF),
@@ -81,7 +90,7 @@ fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
         ) { isList ->
             if (isList) {
                 LazyColumn {
-                    items(wishList) { wish ->
+                    items(items = data) { wish ->
                         WishItem(
                             wish = wish,
                             isGrid = false,
@@ -99,7 +108,7 @@ fun WishlistScreen(wishList: List<Wish>, navController: NavHostController) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(wishList) { wish ->
+                    items(items = data) { wish ->
                         WishItem(
                             wish = wish,
                             isGrid = true,

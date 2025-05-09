@@ -1,25 +1,41 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.Wish
+import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
+import kotlinx.coroutines.flow.StateFlow
 
+const val KEY_ID_WISH = "id"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditScreen(
-    wishId: Int,
-    wishList: List<Wish>,
-    onUpdateWish: (Wish) -> Unit,
-    navController: NavHostController
-)
-{
-    val wish = wishList.find { it.id == wishId }
+    navController: NavHostController,
+    id: Int? = null
+) {
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+    val viewModel: WishViewModel = viewModel(factory = factory)
+    val categoryList by viewModel.kategoriList.collectAsState()
+
+    var wish by remember { mutableStateOf<Wish?>(null) }
+
+    LaunchedEffect(id) {
+        id?.let {
+            wish = viewModel.getWishById(it)
+        }
+    }
 
     if (wish == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -28,12 +44,13 @@ fun EditScreen(
         return
     }
 
-    // State untuk form input
-    var name by remember { mutableStateOf(wish.name) }
-    var price by remember { mutableStateOf(wish.price) }
-    var category by remember { mutableStateOf(wish.type) }
-    var priority by remember { mutableStateOf(wish.priority) }
-    var description by remember { mutableStateOf(wish.description) }
+    var name by remember { mutableStateOf(wish!!.name) }
+    var price by remember { mutableStateOf(wish!!.price.toString()) }
+    var selectedCategory by remember { mutableStateOf(categoryList.find { it.id == wish!!.categoryId }) }
+    var priority by remember { mutableStateOf(wish!!.priority) }
+    var description by remember { mutableStateOf(wish!!.description) }
+
+    var categoryExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -71,12 +88,40 @@ fun EditScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = category,
-                onValueChange = { category = it },
-                label = { Text("Kategori") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("Kategori", style = MaterialTheme.typography.labelMedium)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { categoryExpanded = true }
+                        .padding(12.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                ) {
+                    Text(
+                        text = selectedCategory?.name ?: "Pilih kategori",
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = categoryExpanded,
+                    onDismissRequest = { categoryExpanded = false }
+                ) {
+                    categoryList.forEach { category ->
+                        DropdownMenuItem(
+                            text = { Text(category.name) },
+                            onClick = {
+                                selectedCategory = category
+                                categoryExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             OutlinedTextField(
                 value = priority,
@@ -97,20 +142,22 @@ fun EditScreen(
 
             Button(
                 onClick = {
-                    val updatedWish = wish.copy(
-                        name = name,
-                        price = price,
-                        type = category,
-                        priority = priority,
-                        description = description
-                    )
-                    onUpdateWish(updatedWish)
-                    navController.popBackStack()
+                    if (selectedCategory != null) {
+                        viewModel.update(
+                            name = name,
+                            categoryId = selectedCategory!!.id,
+                            price = price.toDoubleOrNull() ?: 0.0,
+                            priority = priority,
+                            description = description,
+                        )
+                        navController.popBackStack()
+                    }
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text("Simpan")
             }
+
         }
     }
 }
