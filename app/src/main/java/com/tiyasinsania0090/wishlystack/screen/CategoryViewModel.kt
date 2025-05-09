@@ -38,20 +38,20 @@ class CategoryViewModel (private val dao: CategoryDao, private val wishlistDao: 
         }
     }
 
-    suspend fun getById(id: Int): Category? {
-        return dao.getById(id)
-    }
-
-    fun update(
-        name: String,
-    ) {
-        viewModelScope.launch {
-            val category = Category(
-                name = name
-            )
-            dao.update(category)
-        }
-    }
+//    suspend fun getById(id: Int): Category? {
+//        return dao.getById(id)
+//    }
+//
+//    fun update(
+//        name: String,
+//    ) {
+//        viewModelScope.launch {
+//            val category = Category(
+//                name = name
+//            )
+//            dao.update(category)
+//        }
+//    }
 
     fun delete(id: Int){
         viewModelScope.launch(Dispatchers.IO) {

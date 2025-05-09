@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class WishViewModel (private val dao: WishlistDao, private val categoryDao: CategoryDao): ViewModel() {
+class WishViewModel (private val dao: WishlistDao, categoryDao: CategoryDao): ViewModel() {
 
     val allWish: StateFlow<List<Wish>> = dao.getAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -47,9 +47,9 @@ class WishViewModel (private val dao: WishlistDao, private val categoryDao: Cate
         }
     }
 
-    suspend fun getAll(id: Int): Wish? {
-        return dao.getWishById(id)
-    }
+//    suspend fun getAll(id: Int): Wish? {
+//        return dao.getWishById(id)
+//    }
 
     fun updateWish(wish: Wish) {
         viewModelScope.launch(Dispatchers.IO) {

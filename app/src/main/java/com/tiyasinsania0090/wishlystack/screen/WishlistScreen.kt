@@ -24,12 +24,17 @@ import androidx.navigation.NavHostController
 import com.tiyasinsania0090.wishlystack.component.WishItem
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.R
+import com.tiyasinsania0090.wishlystack.util.SettingDataStore
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WishlistScreen(navController: NavHostController) {
-    var showList by remember { mutableStateOf(true) }
+    val dataStore = SettingDataStore(LocalContext.current)
+    val showList by dataStore.layoutFlow.collectAsState(true)
 
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
@@ -58,7 +63,10 @@ fun WishlistScreen(navController: NavHostController) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showList = !showList }) {
+                    IconButton(onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            dataStore.saveLayout(!showList)
+                        } }) {
                         Icon(
                             painter = painterResource(
                                 id = if (showList) R.drawable.baseline_view_list_24
@@ -72,7 +80,7 @@ fun WishlistScreen(navController: NavHostController) {
         },
         bottomBar = {
             BottomBar(
-                currentScreen = "form",
+                currentScreen = "wishlist",
                 onFormClick = { navController.navigate(Screen.Form.route) },
                 onListClick = { /* Stay on form */ },
                 onCategoryClick = { navController.navigate(Screen.Category.route)}

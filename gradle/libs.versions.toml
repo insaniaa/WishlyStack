@@ -12,6 +12,7 @@ composeBom = "2025.04.01"
 navigationCompose = "2.8.9"
 compose = "1.4.3"
 roomRuntime = "2.6.1"
+datastorePreferences = "1.1.4"
 
 
 [libraries]
@@ -35,6 +36,7 @@ compose-material = { group = "androidx.compose.material", name = "material", ver
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomRuntime"}
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomRuntime"}
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
