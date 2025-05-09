@@ -2,10 +2,9 @@ package com.tiyasinsania0090.wishlystack.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,18 +27,31 @@ fun SimpleDropdownSelector(
     ) {
         Text(text = label, style = MaterialTheme.typography.titleMedium)
 
-        Box(
+        OutlinedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .clickable { expanded = true }
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterStart
+                .clickable { expanded = true },
+            colors = CardDefaults.outlinedCardColors(),
+            border = CardDefaults.outlinedCardBorder()
         ) {
-            Text(
-                text = selectedOption.ifEmpty { "Pilih $label" },
-                overflow = TextOverflow.Ellipsis
-            )
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = selectedOption.ifEmpty { "Pilih $label" },
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (selectedOption.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Dropdown Icon"
+                )
+            }
         }
 
         DropdownMenu(
@@ -49,7 +61,7 @@ fun SimpleDropdownSelector(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(text = option) },
+                    text = { Text(option) },
                     onClick = {
                         onOptionSelected(option)
                         expanded = false

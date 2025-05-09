@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,7 +42,6 @@ fun FormScreen(
     var typeError by rememberSaveable { mutableStateOf(false) }
     var priorityError by rememberSaveable { mutableStateOf(false) }
 
-//    val categoryOptions = listOf("Makanan", "Barang", "Lainnya")
     val priorityOptions = listOf("Tinggi", "Sedang", "Rendah")
 
     var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
@@ -59,16 +57,23 @@ fun FormScreen(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BottomBar(
-                currentScreen = "form", // halaman saat ini
+                currentScreen = "form",
                 onFormClick = { /* Stay on form */ },
                 onListClick = onListClick,
                 onCategoryClick = onCategoryClick
             )
-        }
-        ,
+        },
         topBar = {
             TopAppBar(
-                title = {},
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Tambah Wishlist",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onInfoClick) {
                         Icon(
@@ -79,7 +84,8 @@ fun FormScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -122,26 +128,17 @@ fun FormScreen(
                 }
             }
 
-            Text(
-                text = "Wish Form",
-                fontSize = 20.sp,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
-
             OutlinedTextField(
                 value = name,
                 onValueChange = {
                     name = it
                     nameError = false
                 },
-                label = { Text("Nama Barang") },
+                label = { Text("Wishlist") },
                 isError = nameError,
                 modifier = Modifier.fillMaxWidth(),
                 supportingText = {
-                    if (nameError) Text("Nama tidak boleh kosong", color = MaterialTheme.colorScheme.error)
+                    if (nameError) Text("Wishlist tidak boleh kosong", color = MaterialTheme.colorScheme.error)
                 }
             )
 
@@ -155,10 +152,9 @@ fun FormScreen(
                     typeError = false
                 }
             )
-
             if (typeError) {
                 Text(
-                    "Jenis tidak boleh kosong",
+                    "Kategori tidak boleh kosong",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -178,7 +174,6 @@ fun FormScreen(
                     if (priceError) Text("Harga tidak boleh kosong atau bukan angka", color = MaterialTheme.colorScheme.error)
                 }
             )
-
 
             SimpleDropdownSelector(
                 label = "Prioritas",

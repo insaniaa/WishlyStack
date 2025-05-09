@@ -82,9 +82,10 @@ fun WishlistScreen(navController: NavHostController) {
             BottomBar(
                 currentScreen = "wishlist",
                 onFormClick = { navController.navigate(Screen.Form.route) },
-                onListClick = { /* Stay on form */ },
-                onCategoryClick = { navController.navigate(Screen.Category.route)}
+                onListClick = { /* Stay on wishlist */ },
+                onCategoryClick = { navController.navigate(Screen.Category.route) }
             )
+
         },
     ) { padding ->
         AnimatedContent(

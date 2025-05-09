@@ -13,7 +13,7 @@ import com.tiyasinsania0090.wishlystack.screen.*
 fun AppNavGraph(
     navController: NavHostController = rememberNavController(),
 ) {
-    NavHost(navController = navController, startDestination = Screen.Splash.route) {
+    NavHost(navController = navController, startDestination = Screen.Wishlist.route) {
         composable(Screen.Splash.route) {
             SplashScreen(navController)
         }
@@ -53,6 +53,5 @@ fun AppNavGraph(
         composable(Screen.Category.route) {
             CategoryScreen(navController)
         }
-
     }
 }
