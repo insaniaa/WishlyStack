@@ -1,21 +1,40 @@
 package com.tiyasinsania0090.wishlystack.screen
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.tiyasinsania0090.wishlystack.database.WishlistDao
 import com.tiyasinsania0090.wishlystack.model.Wish
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 
-class MainViewModel : ViewModel() {
-    var wishList = mutableStateListOf(
-        Wish(1, "Laptop Baru", "Elektronik", "15000000", "Tinggi", "Untuk keperluan kuliah"),
-        Wish(2, "Sepatu", "Fashion", "500000", "Sedang", "Butuh buat jalan-jalan"),
-        Wish(3, "Meja Belajar", "Furniture", "800000", "Rendah", "Biar lebih fokus")
+class MainViewModel(dao: WishlistDao) : ViewModel() {
+
+    val data: StateFlow<List<Wish>> = dao.getAll().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList()
     )
-        private set
 
-    fun updateWish(updatedWish: Wish) {
-        val index = wishList.indexOfFirst { it.id == updatedWish.id }
-        if (index != -1) {
-            wishList[index] = updatedWish
-        }
-    }
+//    private val _data = MutableStateFlow<List<Wish>>(emptyList())
+//    val data: StateFlow<List<Wish>> = _data
+//
+//    private val _categories = MutableStateFlow<List<Category>>(emptyList())
+//    val categories: StateFlow<List<Category>> = _categories
+
+//    fun getWishById(id: Int): Wish? = data.value.find { it.id == id }
+
+//    fun updateWish(updatedWish: Wish) {
+//        viewModelScope.launch {
+//            wishlistDao.update(updatedWish)
+//            _data.value = wishlistDao.getAll()
+//        }
+//    }
+
+//    fun saveWish(wish: Wish) {
+//        viewModelScope.launch {
+//            wishlistDao.insert(wish)
+//            _data.value = wishlistDao.getAll()
+//        }
+//    }
 }
