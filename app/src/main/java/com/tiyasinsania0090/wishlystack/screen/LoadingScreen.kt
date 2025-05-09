@@ -31,7 +31,7 @@ fun SplashScreen(navController: NavController) {
             dotCount = (dotCount % 3) + 1
         }
 
-        navController.navigate(Screen.Form.route) {
+        navController.navigate(Screen.Wishlist.route) {
             popUpTo(Screen.Splash.route) { inclusive = true }
         }
     }
@@ -46,7 +46,7 @@ fun SplashScreen(navController: NavController) {
     ) {
         Image(
             painter = painterResource(id = R.drawable.cat),
-            contentDescription = "Loading Bunny",
+            contentDescription = "Loading cat",
             modifier = Modifier
                 .height(120.dp)
                 .width(120.dp)

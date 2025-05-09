@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WishlyStack</string>
+    <string name="list_kosong">No data yet</string>
+    <string name="x_diklik">%1$s onClick!</string>
+    <string name="tambah_daftar">Add Whislist</string>
+    <string name="kembali">Back</string>
+    <string name="simpan">Save</string>
+    <string name="edit_daftar">Edit Wishlist</string>
+    <string name="invalid">The title and contents of the wish list cannot be empty</string>
+    <string name="lainnya">More options</string>
+    <string name="hapus">Delete Wishlist</string>
+    <string name="pesan_hapus">Are you sure you want to delete this wish list?</string>
+    <string name="tombol_hapus">Delete</string>
+    <string name="tombol_batal">Cancel</string>
+    <string name="about_application">About Application</string>
+    <string name="about_description">WishlyStack is an application that can help record all wish lists, be it items or goals, manage priorities, and include small notes as motivation for users to make their hopes come true.</string>
+    <string name="tambah_kategori">Add Category</string>
+    <string name="signature">Signed, Tiyas Insania D.</string>
+    <string name="belum_ada_kategori">No Category yet</string>
+    <string name="kategori_digunakan">Category is in use, cannot be deleted</string>
+    <string name="kategori_dihapus">Category deleted</string>
+    <string name="price_format">Price: Rp%1$d</string>
+    <string name="nama_kategori">Category Name</string>
+    <string name="nama_tidak_boleh_kosong">Name cannot be empty</string>
+    <string name="pesan_hapus_kategori">Are you sure you want to delete this category?</string>
+    <string name="item_tidak_ditemukan">No item found</string>
+    <string name="nama">Name</string>
+    <string name="harga">Price</string>
+    <string name="kategori">Category</string>
+    <string name="prioritas">Priority</string>
+    <string name="deskripsi">Description</string>
+    <string name="pilih_kategori">Choose Category</string>
+    <string name="prioritas_rendah">Low</string>
+    <string name="prioritas_sedang">Medium</string>
+    <string name="prioritas_tinggi">High</string>
+    <string name="tambah_wishlist">Add Wishlist</string>
+    <string name="wishlist_tidak_boleh_kosong">Wishlist cannot be empty</string>
+    <string name="kategori_tidak_boleh_kosong">Category cannot be empty</string>
+    <string name="harga_tidak_boleh_kosong">Price cannot be empty</string>
+    <string name="prioritas_tidak_boleh_kosong">Priority cannot be empty</string>
+    <string name="catatan">Notes</string>
+    <string name="details">Details</string>
+    <string name="tambah">Add</string>
+</resources>

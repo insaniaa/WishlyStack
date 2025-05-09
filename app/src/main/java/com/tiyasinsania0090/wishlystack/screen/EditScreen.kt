@@ -9,9 +9,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 
@@ -38,7 +40,7 @@ fun EditScreen(
 
     if (wish == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Item tidak ditemukan")
+            Text(stringResource(R.string.item_tidak_ditemukan))
         }
         return
     }
@@ -52,17 +54,21 @@ fun EditScreen(
 
     var categoryExpanded by remember { mutableStateOf(false) }
     var priorityExpanded by remember { mutableStateOf(false) }
-    val priorityList = listOf("Rendah", "Sedang", "Tinggi")
+    val priorityList = listOf(
+        stringResource(R.string.prioritas_rendah),
+        stringResource(R.string.prioritas_sedang),
+        stringResource(R.string.prioritas_tinggi)
+    )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Wish") },
+                title = { Text(stringResource(R.string.edit_wishlist)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            painter = painterResource(id = com.tiyasinsania0090.wishlystack.R.drawable.baseline_arrow_back_ios_24),
-                            contentDescription = "Back"
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
+                            contentDescription = stringResource(R.string.kembali)
                         )
                     }
                 }
@@ -79,20 +85,20 @@ fun EditScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Nama") },
+                label = { Text(stringResource(R.string.nama)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = price,
                 onValueChange = { price = it },
-                label = { Text("Harga") },
+                label = { Text(stringResource(R.string.harga)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             // Kategori dropdown
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("Kategori", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.kategori), style = MaterialTheme.typography.labelMedium)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -105,7 +111,7 @@ fun EditScreen(
                         )
                 ) {
                     Text(
-                        text = selectedCategory?.name ?: "Pilih kategori",
+                        text = selectedCategory?.name ?: stringResource(R.string.pilih_kategori),
                         modifier = Modifier.align(Alignment.CenterStart)
                     )
                 }
@@ -128,7 +134,7 @@ fun EditScreen(
 
             // Prioritas dropdown
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("Prioritas", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.prioritas), style = MaterialTheme.typography.labelMedium)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -162,7 +168,7 @@ fun EditScreen(
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Deskripsi") },
+                label = { Text(stringResource(R.string.deskripsi)) },
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 4
             )
@@ -179,13 +185,12 @@ fun EditScreen(
                             priority = priority,
                             description = description
                         ))
-
                         navController.popBackStack()
                     }
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text("Simpan")
+                Text(stringResource(R.string.simpan))
             }
         }
     }

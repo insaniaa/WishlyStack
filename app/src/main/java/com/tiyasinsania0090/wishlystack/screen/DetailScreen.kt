@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -26,33 +27,21 @@ fun DetailScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
 
-//    var wish by remember { mutableStateOf<Wish?>(null) }
-//    var categoryName by remember { mutableStateOf("") }
     val allWishes by viewModel.allWish.collectAsState()
     val wish = allWishes.find { it.id == wishId }
 
     val allCategories by viewModel.kategoriList.collectAsState()
     val categoryName = allCategories.find { it.id == wish?.categoryId }?.name ?: "No Category"
 
-//    LaunchedEffect(wishId) {
-//        val fetchedWish = viewModel.getWishById(wishId)
-//        wish = fetchedWish
-//
-//        fetchedWish?.let { wishItem ->
-//            val category = viewModel.kategoriList.value.find { it.id == wishItem.categoryId }
-//            categoryName = category?.id ?: "No Category"
-//        }
-//    }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Wishlist") },
+                title = { Text(stringResource(R.string.wishlist)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.kembali)
                         )
                     }
                 },
@@ -62,13 +51,13 @@ fun DetailScreen(
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_edit_24),
-                            contentDescription = "Edit"
+                            contentDescription = stringResource(R.string.edit)
                         )
                     }
                     IconButton(onClick = { showDialog = true }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_delete_24),
-                            contentDescription = "Delete"
+                            contentDescription = stringResource(R.string.hapus)
                         )
                     }
                 }

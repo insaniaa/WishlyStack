@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -42,7 +43,11 @@ fun FormScreen(
     var typeError by rememberSaveable { mutableStateOf(false) }
     var priorityError by rememberSaveable { mutableStateOf(false) }
 
-    val priorityOptions = listOf("Tinggi", "Sedang", "Rendah")
+    val priorityOptions = listOf(
+        stringResource(R.string.prioritas_tinggi),
+        stringResource(R.string.prioritas_sedang),
+        stringResource(R.string.prioritas_rendah)
+    )
 
     var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
     val kategorilist by viewModel.kategoriList.collectAsState()
@@ -68,7 +73,7 @@ fun FormScreen(
                 title = {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Tambah Wishlist",
+                            text = stringResource(R.string.tambah_wishlist),
                             style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Center)
                         )
@@ -78,7 +83,7 @@ fun FormScreen(
                     IconButton(onClick = onInfoClick) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_info_outline_24),
-                            contentDescription = "Info",
+                            contentDescription = stringResource(R.string.info),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
@@ -109,20 +114,20 @@ fun FormScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "WishlyStack",
+                            stringResource(R.string.wishlystack),
                             fontSize = 24.sp,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "Sometimes putting everything on a list can make it come true",
+                            stringResource(R.string.wishlystack_tagline),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Image(
                         painter = painterResource(id = R.drawable.cat),
-                        contentDescription = "Cat",
+                        contentDescription = stringResource(R.string.cat),
                         modifier = Modifier.size(64.dp)
                     )
                 }
@@ -134,16 +139,16 @@ fun FormScreen(
                     name = it
                     nameError = false
                 },
-                label = { Text("Wishlist") },
+                label = { Text(stringResource(R.string.wishlist)) },
                 isError = nameError,
                 modifier = Modifier.fillMaxWidth(),
                 supportingText = {
-                    if (nameError) Text("Wishlist tidak boleh kosong", color = MaterialTheme.colorScheme.error)
+                    if (nameError) Text(stringResource(R.string.wishlist_tidak_boleh_kosong), color = MaterialTheme.colorScheme.error)
                 }
             )
 
             SimpleDropdownSelector(
-                label = "Kategori",
+                label = stringResource(R.string.kategori),
                 options = categoryNames,
                 selectedOption = selectedCategoryName,
                 onOptionSelected = { selectedName ->
@@ -154,7 +159,7 @@ fun FormScreen(
             )
             if (typeError) {
                 Text(
-                    "Kategori tidak boleh kosong",
+                    stringResource(R.string.kategori_tidak_boleh_kosong),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -166,17 +171,17 @@ fun FormScreen(
                     price = it
                     priceError = false
                 },
-                label = { Text("Harga") },
+                label = { Text(stringResource(R.string.harga)) },
                 isError = priceError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 supportingText = {
-                    if (priceError) Text("Harga tidak boleh kosong atau bukan angka", color = MaterialTheme.colorScheme.error)
+                    if (priceError) Text(stringResource(R.string.harga_tidak_boleh_kosong), color = MaterialTheme.colorScheme.error)
                 }
             )
 
             SimpleDropdownSelector(
-                label = "Prioritas",
+                label = stringResource(R.string.prioritas),
                 options = priorityOptions,
                 selectedOption = selectedPriority,
                 onOptionSelected = {
@@ -186,7 +191,7 @@ fun FormScreen(
             )
             if (priorityError) {
                 Text(
-                    "Prioritas tidak boleh kosong",
+                    stringResource(R.string.prioritas_tidak_boleh_kosong),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -195,7 +200,7 @@ fun FormScreen(
             OutlinedTextField(
                 value = notes,
                 onValueChange = { notes = it },
-                label = { Text("Catatan") },
+                label = { Text(stringResource(R.string.catatan)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
@@ -230,7 +235,7 @@ fun FormScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Submit", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.submit), fontWeight = FontWeight.Bold)
             }
         }
     }

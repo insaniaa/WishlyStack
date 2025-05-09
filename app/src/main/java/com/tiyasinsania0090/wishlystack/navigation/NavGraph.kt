@@ -13,7 +13,7 @@ import com.tiyasinsania0090.wishlystack.screen.*
 fun AppNavGraph(
     navController: NavHostController = rememberNavController(),
 ) {
-    NavHost(navController = navController, startDestination = Screen.Wishlist.route) {
+    NavHost(navController = navController, startDestination = Screen.Splash.route) {
         composable(Screen.Splash.route) {
             SplashScreen(navController)
         }

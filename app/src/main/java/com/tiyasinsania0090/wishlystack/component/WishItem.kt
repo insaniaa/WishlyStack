@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.model.Wish
@@ -53,7 +54,7 @@ fun WishItem(
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E4B8B)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Details")
+                    Text(text = stringResource(R.string.details))
                 }
             }
         } else {

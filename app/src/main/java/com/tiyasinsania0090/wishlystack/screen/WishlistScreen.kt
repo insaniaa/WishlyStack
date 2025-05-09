@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -48,7 +49,7 @@ fun WishlistScreen(navController: NavHostController) {
                 title = {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Wishlist",
+                            text = stringResource(R.string.wishlist),
                             style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.align(Alignment.Center)
                         )
@@ -58,7 +59,7 @@ fun WishlistScreen(navController: NavHostController) {
                     IconButton(onClick = { navController.navigate(Screen.About.route) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_info_outline_24),
-                            contentDescription = "Info"
+                            contentDescription = stringResource(R.string.info)
                         )
                     }
                 },
@@ -66,13 +67,14 @@ fun WishlistScreen(navController: NavHostController) {
                     IconButton(onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
                             dataStore.saveLayout(!showList)
-                        } }) {
+                        }
+                    }) {
                         Icon(
                             painter = painterResource(
                                 id = if (showList) R.drawable.baseline_view_list_24
                                 else R.drawable.baseline_grid_view_24
                             ),
-                            contentDescription = if (showList) "Grid" else "List"
+                            contentDescription = if (showList) stringResource(R.string.grid) else stringResource(R.string.list)
                         )
                     }
                 }
@@ -131,3 +133,4 @@ fun WishlistScreen(navController: NavHostController) {
         }
     }
 }
+

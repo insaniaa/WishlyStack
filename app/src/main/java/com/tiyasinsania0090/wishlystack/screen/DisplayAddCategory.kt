@@ -21,7 +21,7 @@ fun DisplayAddCategory(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Tambah Kategori") },
+        title = { Text(stringResource(R.string.tambah_kategori)) },
         text = {
             OutlinedTextField(
                 value = categoryName,
@@ -29,10 +29,15 @@ fun DisplayAddCategory(
                     categoryName = it
                     nameError = false
                 },
-                label = { Text("Nama Kategori") },
+                label = { Text(stringResource(R.string.nama_kategori)) },
                 isError = nameError,
                 supportingText = {
-                    if (nameError) Text("Nama tidak boleh kosong", color = MaterialTheme.colorScheme.error)
+                    if (nameError) {
+                        Text(
+                            stringResource(R.string.nama_tidak_boleh_kosong),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -43,10 +48,10 @@ fun DisplayAddCategory(
                     nameError = true
                 } else {
                     onConfirm(categoryName.text.trim())
-                    categoryName = TextFieldValue("") // reset input
+                    categoryName = TextFieldValue("")
                 }
             }) {
-                Text("Simpan")
+                Text(stringResource(R.string.simpan))
             }
         },
         dismissButton = {
@@ -55,7 +60,7 @@ fun DisplayAddCategory(
                 categoryName = TextFieldValue("")
                 nameError = false
             }) {
-                Text("Batal")
+                Text(stringResource(R.string.tombol_batal))
             }
         }
     )
@@ -69,7 +74,7 @@ fun DisplayDeleteCategory(
     AlertDialog(
         onDismissRequest = { onDismissRequest() },
         text = {
-            Text(text = "Apakah anda yakin akan menghapus kategori ini?")
+            Text(text = stringResource(R.string.pesan_hapus_kategori))
         },
         confirmButton = {
             TextButton(onClick = { onConfirmation() }) {
@@ -83,3 +88,4 @@ fun DisplayDeleteCategory(
         }
     )
 }
+

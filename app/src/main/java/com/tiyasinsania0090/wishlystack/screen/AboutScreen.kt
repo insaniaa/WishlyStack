@@ -51,7 +51,7 @@ fun AboutScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "WishlyStack",
+                    text = stringResource(R.string.app_name),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary

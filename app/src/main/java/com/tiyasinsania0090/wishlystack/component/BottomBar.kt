@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tiyasinsania0090.wishlystack.R
@@ -31,19 +32,19 @@ fun BottomBar(
         ) {
             BottomBarItem(
                 iconResId = R.drawable.baseline_add_circle_outline_24,
-                label = "Tambah",
+                label = stringResource(R.string.tambah),
                 isSelected = currentScreen == "form",
                 onClick = onFormClick
             )
             BottomBarItem(
                 iconResId = R.drawable.baseline_event_note_24,
-                label = "Wishlist",
+                label = stringResource(R.string.wishlist),
                 isSelected = currentScreen == "list",
                 onClick = onListClick
             )
             BottomBarItem(
                 iconResId = R.drawable.baseline_category_24,
-                label = "Kategori",
+                label = stringResource(R.string.kategori),
                 isSelected = currentScreen == "category",
                 onClick = onCategoryClick
             )
@@ -79,4 +80,3 @@ fun BottomBarItem(
         )
     }
 }
-
