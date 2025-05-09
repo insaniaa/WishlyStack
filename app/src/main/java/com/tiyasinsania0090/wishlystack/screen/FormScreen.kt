@@ -34,7 +34,6 @@ fun FormScreen(
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
-    val data by viewModel.allWish.collectAsState()
 
     var name by rememberSaveable { mutableStateOf("") }
     var selectedPriority by rememberSaveable { mutableStateOf("") }
@@ -60,11 +59,13 @@ fun FormScreen(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BottomBar(
+                currentScreen = "form", // halaman saat ini
                 onFormClick = { /* Stay on form */ },
                 onListClick = onListClick,
                 onCategoryClick = onCategoryClick
             )
-        },
+        }
+        ,
         topBar = {
             TopAppBar(
                 title = {},

@@ -12,12 +12,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
-import kotlinx.coroutines.flow.StateFlow
 
 const val KEY_ID_WISH = "id"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditScreen(
@@ -44,6 +43,7 @@ fun EditScreen(
         return
     }
 
+    // Data yang bisa diedit
     var name by remember { mutableStateOf(wish!!.name) }
     var price by remember { mutableStateOf(wish!!.price.toString()) }
     var selectedCategory by remember { mutableStateOf(categoryList.find { it.id == wish!!.categoryId }) }
@@ -51,6 +51,8 @@ fun EditScreen(
     var description by remember { mutableStateOf(wish!!.description) }
 
     var categoryExpanded by remember { mutableStateOf(false) }
+    var priorityExpanded by remember { mutableStateOf(false) }
+    val priorityList = listOf("Rendah", "Sedang", "Tinggi")
 
     Scaffold(
         topBar = {
@@ -88,6 +90,7 @@ fun EditScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Kategori dropdown
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text("Kategori", style = MaterialTheme.typography.labelMedium)
                 Box(
@@ -123,12 +126,38 @@ fun EditScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = priority,
-                onValueChange = { priority = it },
-                label = { Text("Prioritas") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Prioritas dropdown
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("Prioritas", style = MaterialTheme.typography.labelMedium)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { priorityExpanded = true }
+                        .padding(12.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                ) {
+                    Text(text = priority, modifier = Modifier.align(Alignment.CenterStart))
+                }
+
+                DropdownMenu(
+                    expanded = priorityExpanded,
+                    onDismissRequest = { priorityExpanded = false }
+                ) {
+                    priorityList.forEach { level ->
+                        DropdownMenuItem(
+                            text = { Text(level) },
+                            onClick = {
+                                priority = level
+                                priorityExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             OutlinedTextField(
                 value = description,
@@ -142,14 +171,15 @@ fun EditScreen(
 
             Button(
                 onClick = {
-                    if (selectedCategory != null) {
-                        viewModel.update(
+                    if (wish != null && selectedCategory != null) {
+                        viewModel.updateWish(wish!!.copy(
                             name = name,
-                            categoryId = selectedCategory!!.id,
                             price = price.toDoubleOrNull() ?: 0.0,
+                            categoryId = selectedCategory!!.id,
                             priority = priority,
-                            description = description,
-                        )
+                            description = description
+                        ))
+
                         navController.popBackStack()
                     }
                 },
@@ -157,7 +187,6 @@ fun EditScreen(
             ) {
                 Text("Simpan")
             }
-
         }
     }
 }

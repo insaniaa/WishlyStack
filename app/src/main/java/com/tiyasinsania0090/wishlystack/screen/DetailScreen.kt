@@ -11,9 +11,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.room.Room
 import com.tiyasinsania0090.wishlystack.R
-import com.tiyasinsania0090.wishlystack.database.WishlistDb
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +25,24 @@ fun DetailScreen(
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
-    val data by viewModel.allWish.collectAsState()
+
+//    var wish by remember { mutableStateOf<Wish?>(null) }
+//    var categoryName by remember { mutableStateOf("") }
+    val allWishes by viewModel.allWish.collectAsState()
+    val wish = allWishes.find { it.id == wishId }
+
+    val allCategories by viewModel.kategoriList.collectAsState()
+    val categoryName = allCategories.find { it.id == wish?.categoryId }?.name ?: "No Category"
+
+//    LaunchedEffect(wishId) {
+//        val fetchedWish = viewModel.getWishById(wishId)
+//        wish = fetchedWish
+//
+//        fetchedWish?.let { wishItem ->
+//            val category = viewModel.kategoriList.value.find { it.id == wishItem.categoryId }
+//            categoryName = category?.id ?: "No Category"
+//        }
+//    }
 
     Scaffold(
         topBar = {
@@ -43,7 +58,7 @@ fun DetailScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-//                            navController.navigate(Screen.Edit.createRoute(item.id))
+                        navController.navigate(Screen.Edit.withId(wishId))
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_edit_24),
@@ -75,53 +90,56 @@ fun DetailScreen(
                     .padding(bottom = 16.dp)
             )
 
-            Text(
-                text = "",
-                style = MaterialTheme.typography.headlineSmall
-            )
+            wish?.let {
+                Text(
+                    text = it.name,
+                    style = MaterialTheme.typography.headlineSmall
+                )
 
-            Text(
-                text = "Price: ",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyLarge
-            )
+                Text(
+                    text = "Price: Rp${it.price}",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text("categoryName")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(categoryName)
+                    }
+                    Button(
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(it.priority)
+                    }
                 }
-                Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text("")
-                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = it.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            } ?: run {
+                Text("Loading...", style = MaterialTheme.typography.bodyMedium)
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
         }
     }
 
-//        if (showDialog) {
-//            DisplayAlertDialog(
-//                onDismissRequest = { showDialog = false },
-//                onConfirmation = {
-//                    viewModel.deleteWish {
-//                        navController.popBackStack()
-//                    }
-//                    showDialog = false
-//                }
-//            )
-//        }
+    if (showDialog && wish != null) {
+        DisplayAlertDialog(
+            onDismissRequest = { showDialog = false },
+            onConfirmation = {
+                viewModel.delete(wish.id)
+                showDialog = false
+                navController.popBackStack()
+            }
+        )
+    }
 }
