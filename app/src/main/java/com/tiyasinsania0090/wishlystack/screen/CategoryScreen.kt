@@ -1,10 +1,12 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -12,13 +14,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.tiyasinsania0090.wishlystack.R
+import com.tiyasinsania0090.wishlystack.component.BottomBar
+import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(
-    navController: NavHostController
+    navController: NavHostController,
 ) {
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
@@ -28,6 +32,8 @@ fun CategoryScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }
+    var showDialogDelete by remember { mutableStateOf(false)}
+    var selectedCategoryToDelete by remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -51,7 +57,15 @@ fun CategoryScreen(
                     }
                 }
             )
-        }
+        },
+        bottomBar = {
+            BottomBar(
+                currentScreen = "category",
+                onFormClick = { navController.navigate(Screen.Form.route) },
+                onListClick = { navController.navigate(Screen.Wishlist.route) },
+                onCategoryClick = { /* Stay on form */ }
+            )
+        },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -69,27 +83,72 @@ fun CategoryScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = category.name,
-                                modifier = Modifier.padding(16.dp)
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = category.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(onClick = {
+                                    selectedCategoryToDelete = category
+                                    showDialogDelete = true
+                                }) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_delete_24),
+                                        contentDescription = "Delete"
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
 
-        DisplayAddCategory(
-            showDialog = showDialog,
-            onDismiss = {
-                showDialog = false
-            },
-            onConfirm = { categoryName ->
-                coroutineScope.launch {
-                    viewModel.insert(categoryName)
+            DisplayAddCategory(
+                showDialog = showDialog,
+                onDismiss = {
                     showDialog = false
+                },
+                onConfirm = { categoryName ->
+                    coroutineScope.launch {
+                        viewModel.insert(categoryName)
+                        showDialog = false
+                    }
                 }
+            )
+
+            if (showDialogDelete && selectedCategoryToDelete != null) {
+                DisplayDeleteCategory(
+                    onDismissRequest = {
+                        showDialogDelete = false
+                        selectedCategoryToDelete = null
+                    },
+                    onConfirmation = {
+                        selectedCategoryToDelete?.let { category ->
+                            viewModel.isCategoryUsedInWishlist(category.id) { isUsed ->
+                                if (isUsed) {
+                                    Toast.makeText(
+                                        context,
+                                        "Kategori sedang digunakan, tidak bisa dihapus",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    viewModel.delete(category.id)
+                                    Toast.makeText(context, "Kategori dihapus", Toast.LENGTH_SHORT).show()
+                                }
+                                showDialogDelete = false
+                                selectedCategoryToDelete = null
+                            }
+                        }
+                    }
+                )
             }
-        )
+        }
     }
 }

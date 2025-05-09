@@ -5,6 +5,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.tiyasinsania0090.wishlystack.R
 
 @Composable
 fun DisplayAddCategory(
@@ -54,6 +56,29 @@ fun DisplayAddCategory(
                 nameError = false
             }) {
                 Text("Batal")
+            }
+        }
+    )
+}
+
+@Composable
+fun DisplayDeleteCategory(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismissRequest() },
+        text = {
+            Text(text = "Apakah anda yakin akan menghapus kategori ini?")
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirmation() }) {
+                Text(text = stringResource(R.string.tombol_hapus))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDismissRequest() }) {
+                Text(text = stringResource(R.string.tombol_batal))
             }
         }
     )

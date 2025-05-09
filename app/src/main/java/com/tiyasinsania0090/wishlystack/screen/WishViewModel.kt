@@ -8,7 +8,6 @@ import com.tiyasinsania0090.wishlystack.database.WishlistDao
 import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.Wish
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -22,15 +21,8 @@ class WishViewModel (private val dao: WishlistDao, private val categoryDao: Cate
     val kategoriList: StateFlow<List<Category>> = categoryDao.getAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-//    val name: String,
-//    @ColumnInfo(name = "categoryId")
-//    val categoryId: Int,
-//    val price: String,
-//    val priority: String,
-//    val description: String
-
     suspend fun getWishById(id: Int): Wish? {
-      return dao.getWishById(id)
+        return dao.getWishById(id)
     }
 
     fun insert(
@@ -59,26 +51,14 @@ class WishViewModel (private val dao: WishlistDao, private val categoryDao: Cate
         return dao.getWishById(id)
     }
 
-    fun update(
-        name: String,
-        categoryId: Int,
-        price: Double,
-        priority: String,
-        description: String,
-    ) {
-        viewModelScope.launch {
-            val wish = Wish(
-                name = name,
-                categoryId = categoryId,
-                price = price,
-                priority = priority,
-                description = description,
-            )
+    fun updateWish(wish: Wish) {
+        viewModelScope.launch(Dispatchers.IO) {
             dao.update(wish)
+            Log.d("DB_UPDATE", "Berhasil update wish dengan id: ${wish.id} dan ${wish.categoryId}")
         }
     }
 
-    fun delete(id: Int){
+    fun delete(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             dao.deleteById(id)
         }

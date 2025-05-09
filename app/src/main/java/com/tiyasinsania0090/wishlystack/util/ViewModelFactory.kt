@@ -16,7 +16,7 @@ class ViewModelFactory(
         if (modelClass.isAssignableFrom(WishViewModel::class.java)){
             return WishViewModel (wishlistDao, categoryDao) as T
         } else if (modelClass.isAssignableFrom(CategoryViewModel::class.java)){
-            return CategoryViewModel(categoryDao) as T
+            return CategoryViewModel(categoryDao,wishlistDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel Class")
     }

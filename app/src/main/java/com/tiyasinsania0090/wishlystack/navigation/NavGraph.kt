@@ -40,19 +40,6 @@ fun AppNavGraph(
             DetailScreen(wishId, navController)
         }
 
-//        composable(
-//            route = "edit/{wishId}",
-//            arguments = listOf(navArgument("wishId") { type = NavType.IntType })
-//        ) { backStackEntry ->
-//            val wishId = backStackEntry.arguments?.getInt("wishId") ?: -1
-//            EditScreen(
-//                wishId = wishId,
-//                wishList = viewModel.data,
-//                categories = viewModel.categories,
-//                onUpdateWish = { viewModel.updateWish(it) },
-//                navController = navController
-//            )
-//        }
         composable(
             route = Screen.Edit.route,
             arguments = listOf(

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tiyasinsania0090.wishlystack.database.CategoryDao
+import com.tiyasinsania0090.wishlystack.database.WishlistDao
 import com.tiyasinsania0090.wishlystack.model.Category
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -11,10 +12,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class CategoryViewModel (private val dao: CategoryDao): ViewModel() {
+class CategoryViewModel (private val dao: CategoryDao, private val wishlistDao: WishlistDao): ViewModel() {
 
     val allCategory: StateFlow<List<Category>> = dao.getAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun isCategoryUsedInWishlist(id: Int, onResult: (Boolean)-> Unit) {
+        viewModelScope.launch {
+            val count = wishlistDao.getBarangCountByKategori(id)
+            onResult(count > 0)
+        }
+    }
 
     fun insert(
         name: String,
