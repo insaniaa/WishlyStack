@@ -21,7 +21,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.component.SimpleDropdownSelector
-import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 import kotlinx.coroutines.launch
 
@@ -30,6 +29,7 @@ import kotlinx.coroutines.launch
 fun FormScreen(
     onListClick: () -> Unit,
     onInfoClick: () -> Unit,
+    onCategoryClick: () -> Unit
 ) {
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
@@ -37,7 +37,6 @@ fun FormScreen(
     val data by viewModel.allWish.collectAsState()
 
     var name by rememberSaveable { mutableStateOf("") }
-    var selectedType by rememberSaveable { mutableStateOf("") }
     var selectedPriority by rememberSaveable { mutableStateOf("") }
     var notes by rememberSaveable { mutableStateOf("") }
 
@@ -45,8 +44,13 @@ fun FormScreen(
     var typeError by rememberSaveable { mutableStateOf(false) }
     var priorityError by rememberSaveable { mutableStateOf(false) }
 
-    val categoryOptions = listOf("Makanan", "Barang", "Lainnya")
+//    val categoryOptions = listOf("Makanan", "Barang", "Lainnya")
     val priorityOptions = listOf("Tinggi", "Sedang", "Rendah")
+
+    var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
+    val kategorilist by viewModel.kategoriList.collectAsState()
+    val categoryNames = kategorilist.map { it.name }
+    val selectedCategoryName = kategorilist.find { it.id == selectedCategoryId }?.name ?: ""
 
     var price by rememberSaveable { mutableStateOf("") }
     var priceError by rememberSaveable { mutableStateOf(false) }
@@ -57,7 +61,8 @@ fun FormScreen(
         bottomBar = {
             BottomBar(
                 onFormClick = { /* Stay on form */ },
-                onListClick = onListClick
+                onListClick = onListClick,
+                onCategoryClick = onCategoryClick
             )
         },
         topBar = {
@@ -140,14 +145,16 @@ fun FormScreen(
             )
 
             SimpleDropdownSelector(
-                label = "Jenis",
-                options = categoryOptions,
-                selectedOption = selectedType,
-                onOptionSelected = {
-                    selectedType = it
+                label = "Kategori",
+                options = categoryNames,
+                selectedOption = selectedCategoryName,
+                onOptionSelected = { selectedName ->
+                    val selected = kategorilist.find { it.name == selectedName }
+                    selectedCategoryId = selected?.id
                     typeError = false
                 }
             )
+
             if (typeError) {
                 Text(
                     "Jenis tidak boleh kosong",
@@ -202,23 +209,15 @@ fun FormScreen(
             Button(
                 onClick = {
                     nameError = name.isBlank()
-                    typeError = selectedType.isBlank()
+                    typeError = selectedCategoryId == null
                     priorityError = selectedPriority.isBlank()
                     priceError = price.isBlank() || price.toDoubleOrNull() == null
 
                     if (!nameError && !typeError && !priorityError && !priceError) {
-                        val wish = Wish(
-                            name = name,
-                            categoryId = 0,
-                            price = price.toDouble(),
-                            priority = selectedPriority,
-                            description = notes
-                        )
-
                         coroutineScope.launch {
                             viewModel.insert(
                                 name = name,
-                                categoryId = 0,
+                                categoryId = selectedCategoryId!!,
                                 price = price.toDouble(),
                                 priority = selectedPriority,
                                 description = notes

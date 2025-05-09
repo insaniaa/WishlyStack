@@ -12,7 +12,8 @@ import com.tiyasinsania0090.wishlystack.R
 @Composable
 fun BottomBar(
     onFormClick: () -> Unit,
-    onListClick: () -> Unit
+    onListClick: () -> Unit,
+    onCategoryClick: () -> Unit
 ) {
     BottomAppBar(
         tonalElevation = 4.dp
@@ -40,6 +41,16 @@ fun BottomBar(
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_event_note_24),
                     contentDescription = "List"
+                )
+            }
+
+            IconButton(
+                onClick = onCategoryClick,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_category_24),
+                    contentDescription = "Category"
                 )
             }
         }

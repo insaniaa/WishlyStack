@@ -23,10 +23,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.tiyasinsania0090.wishlystack.component.WishItem
 import com.tiyasinsania0090.wishlystack.component.BottomBar
-import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
-import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +73,8 @@ fun WishlistScreen(navController: NavHostController) {
         bottomBar = {
             BottomBar(
                 onFormClick = { navController.navigate(Screen.Form.route) },
-                onListClick = { navController.navigate(Screen.Wishlist.route) }
+                onListClick = { navController.navigate(Screen.Wishlist.route) },
+                onCategoryClick = { navController.navigate(Screen.Category.route)}
             )
         }
     ) { padding ->

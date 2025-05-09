@@ -20,6 +20,7 @@ fun AppNavGraph(
         composable(Screen.Form.route) {
             FormScreen(
                 onListClick = { navController.navigate(Screen.Wishlist.route) },
+                onCategoryClick = { navController.navigate(Screen.Category.route) },
                 onInfoClick = { navController.navigate(Screen.About.route) }
             )
         }
@@ -38,6 +39,7 @@ fun AppNavGraph(
             val wishId = backStackEntry.arguments?.getInt("wishId") ?: -1
             DetailScreen(wishId, navController)
         }
+
 //        composable(
 //            route = "edit/{wishId}",
 //            arguments = listOf(navArgument("wishId") { type = NavType.IntType })
@@ -60,5 +62,10 @@ fun AppNavGraph(
             val id = navBackStackEntry.arguments?.getInt(KEY_ID_WISH)
             EditScreen(navController, id)
         }
+
+        composable(Screen.Category.route) {
+            CategoryScreen(navController)
+        }
+
     }
 }
