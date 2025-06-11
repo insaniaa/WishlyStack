@@ -1,6 +1,5 @@
 package com.tiyasinsania0090.wishlystack.model
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
@@ -17,11 +16,12 @@ import androidx.room.PrimaryKey
     ]
 )
 data class Wish(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: Int,
+    val userId: String,
     val name: String,
-    @ColumnInfo(name = "categoryId")
     val categoryId: Int,
     val price: Double,
     val priority: String,
-    val description: String
+    val description: String?,
+    val picture: String?
 )

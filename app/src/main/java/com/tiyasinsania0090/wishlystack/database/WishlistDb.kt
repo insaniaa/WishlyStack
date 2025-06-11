@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.model.Category
 
-@Database(entities = [Wish::class, Category::class], version = 1)
+@Database(entities = [Wish::class, Category::class], version = 2)
 abstract class WishlistDb : RoomDatabase() {
     abstract val wishListDao: WishlistDao
     abstract val categoryDao: CategoryDao

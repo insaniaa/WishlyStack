@@ -23,8 +23,4 @@ interface WishlistDao {
 
     @Query("SELECT COUNT(*) FROM wish WHERE categoryId = :categoryId")
     suspend fun getBarangCountByKategori(categoryId: Int): Int
-
-//    @Transaction
-//    @Query("SELECT * FROM wish WHERE id = :wishId")
-//    suspend fun getWishWithCategoryById(wishId: Int): WishWithCategory?
 }
