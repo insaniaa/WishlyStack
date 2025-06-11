@@ -12,11 +12,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
+// Import SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.tiyasinsania0090.wishlystack.R
-import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 import com.tiyasinsania0090.wishlystack.network.WishlistApi
+import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,12 +31,10 @@ fun DetailScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
 
-    // Ambil data dari state database
     val allWishes by viewModel.allWish.collectAsState()
     val wish = allWishes.find { it.id == wishId }
 
     val allCategories by viewModel.kategoriList.collectAsState()
-    // PERUBAHAN: Hapus konversi, karena tipe datanya sudah sama (Int)
     val categoryName = allCategories.find { it.id == wish?.categoryId }?.name ?: "No Category"
 
     Scaffold(
@@ -76,8 +75,9 @@ fun DetailScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // PERUBAHAN: Ganti Image statis dengan AsyncImage dari Coil
-            AsyncImage(
+            // ================== PERUBAHAN DI SINI ==================
+            // Mengganti AsyncImage dengan SubcomposeAsyncImage untuk best practice
+            SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(WishlistApi.getWishlistImageUrl(wish?.picture ?: ""))
                     .crossfade(true)
@@ -86,8 +86,21 @@ fun DetailScreen(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(200.dp)
-                    .padding(bottom = 16.dp)
+                    .padding(bottom = 16.dp),
+                loading = {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                },
+                error = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_broken_image_24),
+                        contentDescription = "Gagal memuat gambar",
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
             )
+            // =======================================================
 
             wish?.let {
                 Text(
@@ -126,6 +139,7 @@ fun DetailScreen(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             } ?: run {
+                // Tampilkan loading jika data 'wish' belum siap
                 CircularProgressIndicator()
             }
         }

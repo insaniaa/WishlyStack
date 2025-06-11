@@ -5,17 +5,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+// Import yang benar adalah SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
+import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.model.Wish
-// Import yang benar adalah ke objek WishlistApi
 import com.tiyasinsania0090.wishlystack.network.WishlistApi
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,9 +39,9 @@ fun WishItem(
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            AsyncImage(
+            // GANTI AsyncImage DENGAN SubcomposeAsyncImage
+            SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    // PERBAIKAN DI SINI: Panggil .data() sebagai fungsi
                     .data(WishlistApi.getWishlistImageUrl(wish.picture ?: ""))
                     .crossfade(true)
                     .build(),
@@ -47,7 +50,25 @@ fun WishItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(if (isGrid) 120.dp else 180.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp)),
+
+                // GUNAKAN BLOK 'loading' UNTUK MENAMPILKAN CircularProgressIndicator
+                loading = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                },
+
+                // Parameter 'error' tetap sama
+                error = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_broken_image_24),
+                        contentDescription = "Gagal memuat gambar"
+                    )
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -62,8 +83,6 @@ fun WishItem(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Pastikan price adalah Double di model Wish Anda
-            // Jika tidak, ubah menjadi wish.price saja
             Text(
                 text = "Rp. ${wish.price}",
                 style = MaterialTheme.typography.bodyMedium,
