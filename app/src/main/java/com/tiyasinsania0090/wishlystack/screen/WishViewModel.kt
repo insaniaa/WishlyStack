@@ -35,7 +35,7 @@ class WishViewModel(
         retrieveDataFromApi()
     }
 
-    private fun retrieveDataFromApi() {
+    fun retrieveDataFromApi() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 // PERBAIKAN 2: PANGGIL WishlistApi SECARA LANGSUNG

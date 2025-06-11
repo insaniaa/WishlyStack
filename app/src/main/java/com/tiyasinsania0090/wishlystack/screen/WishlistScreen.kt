@@ -96,7 +96,12 @@ fun WishlistScreen(navController: NavHostController) {
                 LoadingScreen(modifier = Modifier.padding(padding))
             }
             is ApiStatus.Error -> {
-                ErrorScreen(message = status.message, modifier = Modifier.padding(padding))
+                // Panggil fungsi retrieveDataFromApi dari viewmodel saat tombol ditekan
+                ErrorScreen(
+                    message = status.message,
+                    onRetry = { viewModel.retrieveDataFromApi() }, // <-- Tambahkan ini
+                    modifier = Modifier.padding(padding)
+                )
             }
             is ApiStatus.Success -> {
                 // Jika sukses, tampilkan data seperti sebelumnya
@@ -158,12 +163,17 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ErrorScreen(message: String, modifier: Modifier = Modifier) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier.fillMaxSize()
+fun ErrorScreen(message: String, onRetry: () -> Unit, modifier: Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Error: $message")
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onRetry) {
+            Text("Coba Lagi")
+        }
     }
 }
 
