@@ -1,19 +1,22 @@
 package com.tiyasinsania0090.wishlystack.screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
+import com.tiyasinsania0090.wishlystack.network.WishlistApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,10 +30,12 @@ fun DetailScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
 
+    // Ambil data dari state database
     val allWishes by viewModel.allWish.collectAsState()
     val wish = allWishes.find { it.id == wishId }
 
     val allCategories by viewModel.kategoriList.collectAsState()
+    // PERUBAHAN: Hapus konversi, karena tipe datanya sudah sama (Int)
     val categoryName = allCategories.find { it.id == wish?.categoryId }?.name ?: "No Category"
 
     Scaffold(
@@ -71,11 +76,16 @@ fun DetailScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.cat),
-                contentDescription = "Wish Image",
+            // PERUBAHAN: Ganti Image statis dengan AsyncImage dari Coil
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(WishlistApi.getWishlistImageUrl(wish?.picture ?: ""))
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Gambar untuk ${wish?.name}",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(180.dp)
+                    .size(200.dp)
                     .padding(bottom = 16.dp)
             )
 
@@ -86,7 +96,7 @@ fun DetailScreen(
                 )
 
                 Text(
-                    text = "Price: Rp${it.price}",
+                    text = "Rp. ${it.price}",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -111,12 +121,12 @@ fun DetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = it.description,
+                    text = it.description ?: "",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             } ?: run {
-                Text("Loading...", style = MaterialTheme.typography.bodyMedium)
+                CircularProgressIndicator()
             }
         }
     }

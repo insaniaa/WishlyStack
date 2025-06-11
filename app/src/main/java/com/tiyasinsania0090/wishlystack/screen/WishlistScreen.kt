@@ -40,7 +40,7 @@ fun WishlistScreen(navController: NavHostController) {
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
-    val data by viewModel.allWish.collectAsState()
+    val apiStatus by viewModel.apiWishlistState.collectAsState()
 
     Scaffold(
         containerColor = Color(0xFFF7F1FF),
@@ -90,47 +90,80 @@ fun WishlistScreen(navController: NavHostController) {
 
         },
     ) { padding ->
-        AnimatedContent(
-            targetState = showList,
-            transitionSpec = {
-                fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
-            },
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) { isList ->
-            if (isList) {
-                LazyColumn {
-                    items(items = data) { wish ->
-                        WishItem(
-                            wish = wish,
-                            isGrid = false,
-                            onDetailClick = {
-                                navController.navigate("detail/${wish.id}")
+        // PERUBAHAN 2: Gunakan 'when' untuk menampilkan UI sesuai status API
+        when (val status = apiStatus) {
+            is ApiStatus.Loading -> {
+                LoadingScreen(modifier = Modifier.padding(padding))
+            }
+            is ApiStatus.Error -> {
+                ErrorScreen(message = status.message, modifier = Modifier.padding(padding))
+            }
+            is ApiStatus.Success -> {
+                // Jika sukses, tampilkan data seperti sebelumnya
+                val data = status.wishlist
+                AnimatedContent(
+                    targetState = showList,
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
+                    },
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                ) { isList ->
+                    if (isList) {
+                        LazyColumn {
+                            items(items = data) { wish ->
+                                WishItem( // Kita akan modifikasi WishItem di langkah 3
+                                    wish = wish,
+                                    isGrid = false,
+                                    onDetailClick = {
+                                        navController.navigate("detail/${wish.id}")
+                                    }
+                                )
                             }
-                        )
-                    }
-                }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(items = data) { wish ->
-                        WishItem(
-                            wish = wish,
-                            isGrid = true,
-                            onDetailClick = {
-                                navController.navigate("detail/${wish.id}")
+                        }
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(items = data) { wish ->
+                                WishItem( // Kita akan modifikasi WishItem di langkah 3
+                                    wish = wish,
+                                    isGrid = true,
+                                    onDetailClick = {
+                                        navController.navigate("detail/${wish.id}")
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun LoadingScreen(modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.fillMaxSize()
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun ErrorScreen(message: String, modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.fillMaxSize()
+    ) {
+        Text(text = "Error: $message")
     }
 }
 

@@ -3,6 +3,7 @@ package com.tiyasinsania0090.wishlystack.screen
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -29,6 +31,7 @@ fun EditScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
     val categoryList by viewModel.kategoriList.collectAsState()
+    val priorityList = listOf("Low", "Medium", "High", "Urgent")
 
     var wish by remember { mutableStateOf<Wish?>(null) }
 
@@ -40,25 +43,20 @@ fun EditScreen(
 
     if (wish == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.item_tidak_ditemukan))
+            CircularProgressIndicator()
         }
         return
     }
 
-    // Data yang bisa diedit
     var name by remember { mutableStateOf(wish!!.name) }
+    // PERUBAHAN 1: Ubah 'price' (Double) menjadi String untuk ditampilkan di TextField
     var price by remember { mutableStateOf(wish!!.price.toString()) }
     var selectedCategory by remember { mutableStateOf(categoryList.find { it.id == wish!!.categoryId }) }
     var priority by remember { mutableStateOf(wish!!.priority) }
-    var description by remember { mutableStateOf(wish!!.description) }
+    var description by remember { mutableStateOf(wish!!.description ?: "") }
 
     var categoryExpanded by remember { mutableStateOf(false) }
     var priorityExpanded by remember { mutableStateOf(false) }
-    val priorityList = listOf(
-        stringResource(R.string.prioritas_rendah),
-        stringResource(R.string.prioritas_sedang),
-        stringResource(R.string.prioritas_tinggi)
-    )
 
     Scaffold(
         topBar = {
@@ -93,10 +91,11 @@ fun EditScreen(
                 value = price,
                 onValueChange = { price = it },
                 label = { Text(stringResource(R.string.harga)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Kategori dropdown
+            // ... (Dropdown Kategori & Prioritas tidak berubah)
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.kategori), style = MaterialTheme.typography.labelMedium)
                 Box(
@@ -131,8 +130,6 @@ fun EditScreen(
                     }
                 }
             }
-
-            // Prioritas dropdown
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.prioritas), style = MaterialTheme.typography.labelMedium)
                 Box(
@@ -165,6 +162,7 @@ fun EditScreen(
                 }
             }
 
+
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -180,6 +178,7 @@ fun EditScreen(
                     if (wish != null && selectedCategory != null) {
                         viewModel.updateWish(wish!!.copy(
                             name = name,
+                            // PERUBAHAN 2: Ubah 'price' (String) dari TextField kembali menjadi Double
                             price = price.toDoubleOrNull() ?: 0.0,
                             categoryId = selectedCategory!!.id,
                             priority = priority,

@@ -2,7 +2,6 @@ package com.tiyasinsania0090.wishlystack.database
 
 import androidx.room.*
 import com.tiyasinsania0090.wishlystack.model.Category
-import com.tiyasinsania0090.wishlystack.model.Wish
 import kotlinx.coroutines.flow.Flow
 
 @Dao
