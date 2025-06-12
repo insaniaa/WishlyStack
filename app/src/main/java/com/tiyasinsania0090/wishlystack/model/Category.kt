@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "category")
 data class Category(
+    // PERBAIKAN FINAL: Tambahkan autoGenerate = true dan nilai default = 0
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     val id: Int = 0,
