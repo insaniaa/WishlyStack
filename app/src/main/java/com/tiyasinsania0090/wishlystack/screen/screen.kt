@@ -1,5 +1,8 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+// PINDAHKAN KONSTANTA KE SINI
+const val KEY_ID_WISH = "id"
+
 sealed class Screen(val route: String) {
     data object Wishlist : Screen("wishlist")
     data object Form : Screen("form")

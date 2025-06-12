@@ -17,8 +17,9 @@ import androidx.navigation.NavHostController
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.model.Category
+import com.tiyasinsania0090.wishlystack.model.User
+import com.tiyasinsania0090.wishlystack.util.SettingDataStore
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,143 +30,108 @@ fun CategoryScreen(
     val factory = ViewModelFactory(context)
     val viewModel: CategoryViewModel = viewModel(factory = factory)
 
-    val categories by viewModel.allCategory.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val dataStore = SettingDataStore(context)
+    val user by dataStore.userFlow.collectAsState(initial = User())
 
-    var showDialog by remember { mutableStateOf(false) }
-    var showDialogDelete by remember { mutableStateOf(false) }
+    val categories by viewModel.categories.collectAsState()
+    val opStatus by viewModel.opStatus.collectAsState()
+
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedCategoryToDelete by remember { mutableStateOf<Category?>(null) }
 
+    LaunchedEffect(user.email) {
+        if (user.email.isNotEmpty()) {
+            viewModel.refreshCategoriesFromServer(user.email)
+        }
+    }
 
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = stringResource(id = R.string.tambah_kategori),
-                                style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24),
-                                contentDescription = stringResource(id = R.string.kembali)
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { showDialog = true }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
-                                contentDescription = stringResource(id = R.string.tambah_kategori)
-                            )
-                        }
-                    }
-                )
-            },
-            bottomBar = {
-                BottomBar(
-                    currentScreen = "category",
-                    onFormClick = { navController.navigate(Screen.Form.route) },
-                    onListClick = { navController.navigate(Screen.Wishlist.route) },
-                    onCategoryClick = { /* Stay on form */ }
-                )
-            },
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .padding(16.dp)
+    LaunchedEffect(opStatus) {
+        opStatus?.let { (success, message) ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.clearOpStatus()
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Box(modifier = Modifier.fillMaxWidth()) { Text(text = stringResource(id = R.string.kategori), style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.Center)) } },
+                navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24), contentDescription = stringResource(id = R.string.kembali)) } },
+                actions = { IconButton(onClick = { showAddDialog = true }) { Icon(painter = painterResource(id = R.drawable.baseline_add_circle_outline_24), contentDescription = stringResource(id = R.string.tambah_kategori)) } }
+            )
+        },
+        bottomBar = {
+            BottomBar(
+                currentScreen = "category",
+                onFormClick = { navController.navigate(Screen.Form.route) },
+                onListClick = { navController.navigate(Screen.Wishlist.route) },
+                onCategoryClick = { /* Stay on category */ }
+            )
+        },
+    ) { padding ->
+        if (categories.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Text(text = stringResource(id = R.string.belum_ada_kategori), style = MaterialTheme.typography.bodyLarge)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(padding).padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (categories.isEmpty()) {
-                    Text(
-                        text = stringResource(id = R.string.belum_ada_kategori),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(categories) { category ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = category.name,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    IconButton(onClick = {
-                                        selectedCategoryToDelete = category
-                                        showDialogDelete = true
-                                    }) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.baseline_delete_24),
-                                            contentDescription = stringResource(id = R.string.hapus)
-                                        )
-                                    }
-                                }
+                items(categories, key = { it.id }) { category ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = category.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                            IconButton(onClick = {
+                                selectedCategoryToDelete = category
+                                showDeleteDialog = true
+                            }) {
+                                Icon(painter = painterResource(id = R.drawable.baseline_delete_24), contentDescription = stringResource(id = R.string.hapus))
                             }
                         }
                     }
-                }
-
-                DisplayAddCategory(
-                    showDialog = showDialog,
-                    onDismiss = {
-                        showDialog = false
-                    },
-                    onConfirm = { categoryName ->
-                        coroutineScope.launch {
-                            viewModel.insert(categoryName)
-                            showDialog = false
-                        }
-                    }
-                )
-
-                if (showDialogDelete && selectedCategoryToDelete != null) {
-                    DisplayDeleteCategory(
-                        onDismissRequest = {
-                            showDialogDelete = false
-                            selectedCategoryToDelete = null
-                        },
-                        onConfirmation = {
-                            selectedCategoryToDelete?.let { category ->
-                                viewModel.isCategoryUsedInWishlist(category.id) { isUsed ->
-                                    if (isUsed) {
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.kategori_digunakan),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        viewModel.delete(category.id)
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.kategori_dihapus),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                    showDialogDelete = false
-                                    selectedCategoryToDelete = null
-                                }
-                            }
-                        }
-                    )
                 }
             }
         }
+
+        if (showAddDialog) {
+            DisplayAddCategory(
+                showDialog = true,
+                onDismiss = { showAddDialog = false },
+                onConfirm = { categoryName ->
+                    viewModel.addCategory(user.email, categoryName)
+                    showAddDialog = false
+                }
+            )
+        }
+
+        if (showDeleteDialog && selectedCategoryToDelete != null) {
+            DisplayDeleteCategory(
+                onDismissRequest = {
+                    showDeleteDialog = false
+                    selectedCategoryToDelete = null
+                },
+                onConfirmation = {
+                    selectedCategoryToDelete?.let { category ->
+                        viewModel.isCategoryUsedInWishlist(category.id) { isUsed ->
+                            if (isUsed) {
+                                Toast.makeText(context, context.getString(R.string.kategori_digunakan), Toast.LENGTH_SHORT).show()
+                                showDeleteDialog = false
+                                selectedCategoryToDelete = null
+                            } else {
+                                viewModel.deleteCategory(user.email, category.id)
+                                showDeleteDialog = false
+                                selectedCategoryToDelete = null
+                            }
+                        }
+                    }
+                }
+            )
+        }
     }
+}

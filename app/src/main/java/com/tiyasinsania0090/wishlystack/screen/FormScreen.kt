@@ -1,13 +1,22 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -15,11 +24,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.component.SimpleDropdownSelector
+import com.tiyasinsania0090.wishlystack.model.Category
+import com.tiyasinsania0090.wishlystack.model.User
+import com.tiyasinsania0090.wishlystack.util.SettingDataStore
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,29 +45,29 @@ fun FormScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
 
-    // Menghubungkan state dengan ViewModel
-    val name by viewModel.name.collectAsState()
-    val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
-    val price by viewModel.price.collectAsState()
-    val selectedPriority by viewModel.selectedPriority.collectAsState()
-    val notes by viewModel.notes.collectAsState()
-
-    val nameError by viewModel.nameError.collectAsState()
-    val typeError by viewModel.typeError.collectAsState()
-    val priceError by viewModel.priceError.collectAsState()
-    val priorityError by viewModel.priorityError.collectAsState()
-
-    val priorityOptions = listOf(
-        stringResource(R.string.prioritas_tinggi),
-        stringResource(R.string.prioritas_sedang),
-        stringResource(R.string.prioritas_rendah)
-    )
-
+    // --- State dari ViewModel (hanya untuk mengambil daftar kategori) ---
     val kategorilist by viewModel.kategoriList.collectAsState()
-    val categoryNames = kategorilist.map { it.name }
-    val selectedCategoryName = kategorilist.find { it.id == selectedCategoryId }?.name ?: ""
+    val priorityOptions = listOf("Low", "Medium", "High")
 
-    val coroutineScope = rememberCoroutineScope()
+    // Mengambil info user dari DataStore
+    val dataStore = SettingDataStore(context)
+    val user by dataStore.userFlow.collectAsState(initial = User())
+
+    // ================== PERUBAHAN STRUKTUR UTAMA ==================
+    // State untuk setiap field form sekarang dikelola secara lokal di sini,
+    // sama seperti pada EditScreen.
+    var name by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<Category?>(null) }
+    var priority by remember { mutableStateOf("Low") } // Beri nilai awal
+    var description by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    // =============================================================
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? -> imageUri = uri }
+    )
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -79,11 +92,7 @@ fun FormScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onInfoClick) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_info_outline_24),
-                            contentDescription = stringResource(R.string.info),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Icon(painter = painterResource(id = R.drawable.baseline_info_outline_24), contentDescription = stringResource(R.string.info), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -101,115 +110,91 @@ fun FormScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Your content code here, using the updated state
 
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    viewModel.name.value = it
-                    viewModel.nameError.value = false
-                },
-                label = { Text(stringResource(R.string.wishlist)) },
-                isError = nameError,
-                modifier = Modifier.fillMaxWidth(),
-                supportingText = {
-                    if (nameError) Text(
-                        stringResource(R.string.wishlist_tidak_boleh_kosong),
-                        color = MaterialTheme.colorScheme.error
-                    )
+            // --- UI GAMBAR (Sama seperti EditScreen) ---
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                SubcomposeAsyncImage(
+                    model = imageUri, // Langsung dari state URI
+                    contentDescription = "Gambar Terpilih",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(150.dp).clip(RoundedCornerShape(12.dp)),
+                    // Tampilkan placeholder jika gambar belum dipilih
+                    loading = { CircularProgressIndicator() },
+                    error = {
+                        Box(modifier = Modifier
+                            .fillMaxSize()
+                            .border(width = 1.dp, color = MaterialTheme.colorScheme.outline, shape = RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center) {
+                            Icon(painterResource(id = R.drawable.baseline_image_24), contentDescription = "Placeholder")
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(onClick = { galleryLauncher.launch("image/*") }) {
+                    Text("Pilih Gambar")
                 }
-            )
+            }
+
+            OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text(stringResource(R.string.wishlist)) }, modifier = Modifier.fillMaxWidth())
 
             SimpleDropdownSelector(
                 label = stringResource(R.string.kategori),
-                options = categoryNames,
-                selectedOption = selectedCategoryName,
+                options = kategorilist.map { it.name },
+                selectedOption = selectedCategory?.name ?: "",
                 onOptionSelected = { selectedName ->
-                    val selected = kategorilist.find { it.name == selectedName }
-                    viewModel.selectedCategoryId.value = selected?.id
-                    viewModel.typeError.value = false
+                    selectedCategory = kategorilist.find { it.name == selectedName }
                 }
             )
-            if (typeError) {
-                Text(
-                    stringResource(R.string.kategori_tidak_boleh_kosong),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
 
-            OutlinedTextField(
-                value = price,
-                onValueChange = {
-                    viewModel.price.value = it
-                    viewModel.priceError.value = false
-                },
-                label = { Text(stringResource(R.string.harga)) },
-                isError = priceError,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                supportingText = {
-                    if (priceError) Text(
-                        stringResource(R.string.harga_tidak_boleh_kosong),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            )
+            OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text(stringResource(R.string.harga)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
 
             SimpleDropdownSelector(
                 label = stringResource(R.string.prioritas),
                 options = priorityOptions,
-                selectedOption = selectedPriority,
-                onOptionSelected = {
-                    viewModel.selectedPriority.value = it
-                    viewModel.priorityError.value = false
-                }
+                selectedOption = priority,
+                onOptionSelected = { priority = it }
             )
-            if (priorityError) {
-                Text(
-                    stringResource(R.string.prioritas_tidak_boleh_kosong),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
 
-            OutlinedTextField(
-                value = notes,
-                onValueChange = { viewModel.notes.value = it },
-                label = { Text(stringResource(R.string.catatan)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
-                maxLines = 5
-            )
+            OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text(stringResource(R.string.catatan)) }, modifier = Modifier.fillMaxWidth().height(120.dp), maxLines = 5)
 
             Button(
                 onClick = {
-                    viewModel.nameError.value = name.isBlank()
-                    viewModel.typeError.value = selectedCategoryId == null
-                    viewModel.priorityError.value = selectedPriority.isBlank()
-                    viewModel.priceError.value = price.isBlank() || price.toDoubleOrNull() == null
+                    // Validasi menggunakan state lokal
+                    val isImageSelected = imageUri != null
+                    val isNameValid = name.isNotBlank()
+                    val isCategoryValid = selectedCategory != null
+                    val isPriceValid = price.isNotBlank() && price.toDoubleOrNull() != null
 
-                    if (!viewModel.nameError.value && !viewModel.typeError.value && !viewModel.priorityError.value && !viewModel.priceError.value) {
-                        coroutineScope.launch {
-                            viewModel.insert(
-                                name = name,
-                                categoryId = selectedCategoryId!!,
-                                price = price.toDouble(),
-                                priority = selectedPriority,
-                                description = notes
-                            )
-                            onListClick()
+                    if (isNameValid && isCategoryValid && isPriceValid && isImageSelected) {
+                        viewModel.addWishlist(
+                            userId = user.email,
+                            name = name,
+                            categoryId = selectedCategory!!.id,
+                            price = price.toDouble(),
+                            priority = priority,
+                            description = description,
+                            imageUri = imageUri!!,
+                            onResult = { success, message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                if (success) {
+                                    onListClick()
+                                }
+                            }
+                        )
+                    } else {
+                        // Beri tahu pengguna apa yang salah
+                        val errorMessage = when {
+                            !isImageSelected -> "Silakan pilih gambar terlebih dahulu"
+                            !isNameValid -> "Nama wishlist tidak boleh kosong"
+                            !isCategoryValid -> "Kategori tidak boleh kosong"
+                            !isPriceValid -> "Harga tidak valid"
+                            else -> "Terjadi kesalahan tidak diketahui"
                         }
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
             ) {
                 Text(stringResource(R.string.submit), fontWeight = FontWeight.Bold)
             }

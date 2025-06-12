@@ -1,5 +1,6 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,11 +13,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-// Import SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.tiyasinsania0090.wishlystack.R
+import com.tiyasinsania0090.wishlystack.model.User
 import com.tiyasinsania0090.wishlystack.network.WishlistApi
+import com.tiyasinsania0090.wishlystack.util.SettingDataStore
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,6 +32,10 @@ fun DetailScreen(
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
+
+    // Mengambil info user untuk otorisasi
+    val dataStore = SettingDataStore(context)
+    val user by dataStore.userFlow.collectAsState(initial = User())
 
     val allWishes by viewModel.allWish.collectAsState()
     val wish = allWishes.find { it.id == wishId }
@@ -58,11 +64,14 @@ fun DetailScreen(
                             contentDescription = stringResource(R.string.edit)
                         )
                     }
-                    IconButton(onClick = { showDialog = true }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_delete_24),
-                            contentDescription = stringResource(R.string.hapus)
-                        )
+                    // Hanya tampilkan tombol hapus jika wishlist ini milik user yang login
+                    if (wish != null && wish.userId == user.email) {
+                        IconButton(onClick = { showDialog = true }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_delete_24),
+                                contentDescription = stringResource(R.string.hapus)
+                            )
+                        }
                     }
                 }
             )
@@ -75,8 +84,6 @@ fun DetailScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ================== PERUBAHAN DI SINI ==================
-            // Mengganti AsyncImage dengan SubcomposeAsyncImage untuk best practice
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(WishlistApi.getWishlistImageUrl(wish?.picture ?: ""))
@@ -100,7 +107,6 @@ fun DetailScreen(
                     )
                 }
             )
-            // =======================================================
 
             wish?.let {
                 Text(
@@ -139,20 +145,27 @@ fun DetailScreen(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             } ?: run {
-                // Tampilkan loading jika data 'wish' belum siap
                 CircularProgressIndicator()
             }
         }
     }
 
+    // ================== PERBAIKAN LOGIKA DELETE DI SINI ==================
     if (showDialog && wish != null) {
         DisplayAlertDialog(
             onDismissRequest = { showDialog = false },
             onConfirmation = {
-                viewModel.delete(wish.id)
-                showDialog = false
-                navController.popBackStack()
+                // Panggil fungsi delete yang baru dari ViewModel
+                viewModel.deleteWishFromServer(wish) { success, message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    if (success) {
+                        showDialog = false
+                        // Kembali ke halaman sebelumnya setelah berhasil hapus
+                        navController.popBackStack()
+                    }
+                }
             }
         )
     }
+    // ====================================================================
 }
