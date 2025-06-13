@@ -12,3 +12,9 @@ data class ApiPostResponse(
     @Json(name = "errors")
     val errors: Map<String, List<String>>? = null
 )
+
+data class ApiResponse(
+    val status: Boolean,
+    val message: String?,
+    val data: Any?
+)

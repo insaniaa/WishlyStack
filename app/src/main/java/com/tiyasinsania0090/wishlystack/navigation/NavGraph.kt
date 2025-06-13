@@ -23,7 +23,7 @@ fun AppNavGraph(
         composable(Screen.Form.route) {
             FormScreen(
                 onListClick = { navController.navigate(Screen.Wishlist.route) },
-                onCategoryClick = { navController.navigate(Screen.Category.route) },
+//                onCategoryClick = { navController.navigate(Screen.Category.route) },
                 onInfoClick = { navController.navigate(Screen.About.route) }
             )
         }

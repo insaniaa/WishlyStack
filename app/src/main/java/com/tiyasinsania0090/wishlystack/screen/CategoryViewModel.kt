@@ -1,5 +1,6 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,8 @@ import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.network.WishlistApi
 import kotlinx.coroutines.launch
+
+private const val TAG = "CategoryViewModel"
 
 class CategoryViewModel : ViewModel() {
 
@@ -47,8 +50,18 @@ class CategoryViewModel : ViewModel() {
             try {
                 val response = WishlistApi.service.addCategory(name)
                 if (response.status) {
-                    _opStatus.value = true to "Kategori berhasil ditambahkan"
+                    val dataValue = response.data
+
+                    var successMessage = "Kategori berhasil ditambahkan"
+
+                    if (dataValue is String && dataValue.isNotBlank()) {
+                        successMessage = dataValue
+                    }
+
+                    Log.i(TAG, "Operasi sukses. Pesan: $successMessage")
+                    _opStatus.value = true to successMessage
                     refreshCategoriesFromServer()
+
                 } else {
                     _opStatus.value = false to (response.message ?: "Gagal menambah kategori")
                 }

@@ -19,6 +19,7 @@ import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.model.User
 import com.tiyasinsania0090.wishlystack.network.WishlistApi
 import com.tiyasinsania0090.wishlystack.util.SettingDataStore
+import com.tiyasinsania0090.wishlystack.util.UserDataStore
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,11 +31,11 @@ fun DetailScreen(
     var showDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val factory = ViewModelFactory(context)
+    val factory = ViewModelFactory(context.applicationContext)
     val viewModel: WishViewModel = viewModel(factory = factory)
 
-    val dataStore = SettingDataStore(context)
-    val user by dataStore.userFlow.collectAsState(initial = User())
+    val dataStore1 = UserDataStore(context)
+    val user by dataStore1.getUserFlow().collectAsState(initial = User())
 
     val allWishes by viewModel.allWish.collectAsState()
     val wish = allWishes.find { it.id == wishId }
@@ -63,7 +64,6 @@ fun DetailScreen(
                             contentDescription = stringResource(R.string.edit)
                         )
                     }
-                    // Hanya tampilkan tombol hapus jika wishlist ini milik user yang login
                     if (wish != null && wish.userId == user.email) {
                         IconButton(onClick = { showDialog = true }) {
                             Icon(
@@ -150,17 +150,20 @@ fun DetailScreen(
     }
 
     if (showDialog && wish != null) {
+        // Di dalam if (showDialog && wish != null)
+
         DisplayAlertDialog(
             onDismissRequest = { showDialog = false },
             onConfirmation = {
-//                viewModel.deleteWishFromServer(wish) { success, message ->
-//                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-//                    if (success) {
-//                        showDialog = false
-//
-//                        navController.popBackStack()
-//                    }
-//                }
+                viewModel.deleteWishFromServer(wish) { success, message ->
+                    // Tampilkan Toast terlebih dahulu, ini tidak masalah
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    if (success) {
+                        navController.popBackStack()
+
+                        showDialog = false
+                    }
+                }
             }
         )
     }

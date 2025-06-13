@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -134,15 +135,17 @@ fun WishlistScreen(navController: NavHostController) {
         },
 
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate(Screen.Form.route) },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.tambah),
-                    tint = Color.White
-                )
+            if(user.email.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = { navController.navigate(Screen.Form.route) },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.tambah),
+                        tint = Color.White
+                    )
+                }
             }
         },
 
@@ -165,65 +168,87 @@ fun WishlistScreen(navController: NavHostController) {
 
         },
     ) { padding ->
-        when (val status = apiStatus) {
-            is ApiStatus.Loading -> {
-                LoadingScreen(modifier = Modifier.padding(padding))
-            }
-            is ApiStatus.Error -> {
-                ErrorScreen(
-                    message = status.message,
-                    onRetry = {
-                        if (user.email.isNotEmpty()) {
-                            viewModel.retrieveDataFromApi(user.email)
-                        }
-                    },
-                    modifier = Modifier.padding(padding)
+        if(user.email.isEmpty()){
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Silakan login untuk melihat data",
+                    modifier = Modifier.padding(top = 16.dp),
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
                 )
             }
-            is ApiStatus.Success -> {
-                val data = status.wishlist
-                if (data.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                        Text("Anda belum memiliki wishlist.")
-                    }
-                } else {
-                    AnimatedContent(
-                        targetState = showList,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
-                        },
-                        modifier = Modifier
-                            .padding(padding)
-                            .fillMaxSize()
-                    ) { isList ->
-                        if (isList) {
-                            LazyColumn {
-                                items(items = data) { wish ->
-                                    WishItem(
-                                        wish = wish,
-                                        isGrid = false,
-                                        onDetailClick = {
-                                            navController.navigate("detail/${wish.id}")
-                                        }
-                                    )
-                                }
+        } else {
+            when (val status = apiStatus) {
+                is ApiStatus.Loading -> {
+                    LoadingScreen(modifier = Modifier.padding(padding))
+                }
+
+                is ApiStatus.Error -> {
+                    ErrorScreen(
+                        message = status.message,
+                        onRetry = {
+                            if (user.email.isNotEmpty()) {
+                                viewModel.retrieveDataFromApi(user.email)
                             }
-                        } else {
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(2),
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(items = data) { wish ->
-                                    WishItem(
-                                        wish = wish,
-                                        isGrid = true,
-                                        onDetailClick = {
-                                            navController.navigate("detail/${wish.id}")
-                                        }
-                                    )
+                        },
+                        modifier = Modifier.padding(padding)
+                    )
+                }
+
+                is ApiStatus.Success -> {
+                    val data = status.wishlist
+                    if (data.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize().padding(padding),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Anda belum memiliki wishlist.")
+                        }
+                    } else {
+                        AnimatedContent(
+                            targetState = showList,
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(300)) togetherWith fadeOut(
+                                    animationSpec = tween(300)
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(padding)
+                                .fillMaxSize()
+                        ) { isList ->
+                            if (isList) {
+                                LazyColumn {
+                                    items(items = data) { wish ->
+                                        WishItem(
+                                            wish = wish,
+                                            isGrid = false,
+                                            onDetailClick = {
+                                                navController.navigate("detail/${wish.id}")
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(items = data) { wish ->
+                                        WishItem(
+                                            wish = wish,
+                                            isGrid = true,
+                                            onDetailClick = {
+                                                navController.navigate("detail/${wish.id}")
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -289,7 +314,7 @@ fun ErrorScreen(message: String, onRetry: () -> Unit, modifier: Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Error: $message")
+        Text(text = "Anda sedang tidak terhubung ke internet :(")
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRetry) {
             Text("Coba Lagi")

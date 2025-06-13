@@ -28,7 +28,7 @@ import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.component.SimpleDropdownSelector
 import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.User
-import com.tiyasinsania0090.wishlystack.util.SettingDataStore
+import com.tiyasinsania0090.wishlystack.util.UserDataStore
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,12 +40,13 @@ fun FormScreen(
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
-
-    val kategorilist by viewModel.kategoriList.collectAsState()
+    val viewModel1: CategoryViewModel = viewModel()
+    val categories by viewModel1.categories
     val priorityOptions = listOf("Low", "Medium", "High")
 
-    val dataStore = SettingDataStore(context)
-    val user by dataStore.userFlow.collectAsState(initial = User())
+    val dataStore1 = UserDataStore(context)
+
+    val user by dataStore1.getUserFlow().collectAsState(initial = User())
 
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
@@ -58,6 +59,10 @@ fun FormScreen(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? -> imageUri = uri }
     )
+
+    LaunchedEffect(key1 = true) {
+        viewModel1.refreshCategoriesFromServer()
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -110,6 +115,8 @@ fun FormScreen(
                     }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+                Text("File: .jpg, .jpeg, .png, max: 200kb")
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(onClick = { galleryLauncher.launch("image/*") }) {
                     Text("Pilih Gambar")
                 }
@@ -119,10 +126,10 @@ fun FormScreen(
 
             SimpleDropdownSelector(
                 label = stringResource(R.string.kategori),
-                options = kategorilist.map { it.name },
+                options = categories.map { it.name },
                 selectedOption = selectedCategory?.name ?: "",
                 onOptionSelected = { selectedName ->
-                    selectedCategory = kategorilist.find { it.name == selectedName }
+                    selectedCategory = categories.find { it.name == selectedName }
                 }
             )
 
@@ -139,12 +146,14 @@ fun FormScreen(
 
             Button(
                 onClick = {
+                    val isUserValid = user.email.isNotBlank()
+
                     val isImageSelected = imageUri != null
                     val isNameValid = name.isNotBlank()
                     val isCategoryValid = selectedCategory != null
                     val isPriceValid = price.isNotBlank() && price.toDoubleOrNull() != null
 
-                    if (isNameValid && isCategoryValid && isPriceValid && isImageSelected) {
+                    if (isUserValid && isNameValid && isCategoryValid && isPriceValid && isImageSelected) {
                         viewModel.addWishlist(
                             userId = user.email,
                             name = name,
@@ -162,10 +171,10 @@ fun FormScreen(
                         )
                     } else {
                         val errorMessage = when {
+                            !isUserValid -> "Gagal memuat data user, silakan coba lagi"
                             !isImageSelected -> "Silakan pilih gambar terlebih dahulu"
                             !isNameValid -> "Nama wishlist tidak boleh kosong"
                             !isCategoryValid -> "Kategori tidak boleh kosong"
-                            !isPriceValid -> "Harga tidak valid"
                             else -> "Terjadi kesalahan tidak diketahui"
                         }
                         Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()

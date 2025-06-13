@@ -15,11 +15,13 @@ import com.tiyasinsania0090.wishlystack.database.WishlistDao
 import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.Wish
 import com.tiyasinsania0090.wishlystack.network.WishlistApi
+import com.tiyasinsania0090.wishlystack.util.UserDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -45,6 +47,8 @@ class WishViewModel(
     private val _apiWishlistState = MutableStateFlow<ApiStatus>(ApiStatus.Loading)
     val apiWishlistState: StateFlow<ApiStatus> = _apiWishlistState.asStateFlow()
     private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+
+    val dataStore = UserDataStore(context)
 
     fun retrieveDataFromApi(userId: String) {
         if (userId.isEmpty()) {
@@ -220,7 +224,34 @@ class WishViewModel(
                 launch(Dispatchers.Main) { onResult(false, e.message ?: "Gagal memperbarui data") }
             }
         }
+    }
+    fun deleteWishFromServer(wish: Wish, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val dataStore = UserDataStore(context) // 'context' harus tersedia
+                val userId = dataStore.getUserFlow().first().email
 
+                if (userId.isBlank()) {
+                    launch(Dispatchers.Main) { onResult(false, "User tidak terautentikasi.") }
+                    return@launch
+                }
 
+                // Memanggil service Retrofit untuk menghapus
+                val response = WishlistApi.service.deleteWish(userId, wish.id)
+
+                if (response.status) {
+                    // Refresh data lokal jika berhasil
+                    retrieveDataFromApi(userId) // Pastikan fungsi ini ada di ViewModel Anda
+                    launch(Dispatchers.Main) { onResult(true, response.message) }
+                } else {
+                    launch(Dispatchers.Main) { onResult(false, response.message) }
+                }
+
+            } catch (e: Exception) {
+                // Menangani error koneksi atau lainnya
+                val errorMessage = e.message ?: "Gagal menghapus data"
+                launch(Dispatchers.Main) { onResult(false, errorMessage) }
+            }
+        }
     }
 }

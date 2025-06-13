@@ -40,6 +40,8 @@ fun EditScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
     val categoryList by viewModel.kategoriList.collectAsState()
+    val viewModel1: CategoryViewModel = viewModel()
+    val categories by viewModel1.categories
     val priorityList = listOf("Low", "Medium", "High")
 
     var wish by remember { mutableStateOf<Wish?>(null) }
@@ -54,6 +56,10 @@ fun EditScreen(
         id?.let {
             wish = viewModel.getWishById(it)
         }
+    }
+
+    LaunchedEffect(key1 = true) {
+        viewModel1.refreshCategoriesFromServer()
     }
 
     if (wish == null) {
@@ -106,6 +112,8 @@ fun EditScreen(
                     error = { Icon(painterResource(id = R.drawable.baseline_broken_image_24), contentDescription = "Error") }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+                Text("File: .jpg, .jpeg, .png, max: 200kb")
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(onClick = { galleryLauncher.launch("image/*") }) {
                     Text("Ganti Gambar")
                 }
@@ -116,10 +124,10 @@ fun EditScreen(
 
             SimpleDropdownSelector(
                 label = stringResource(R.string.kategori),
-                options = categoryList.map { it.name },
+                options = categories.map { it.name },
                 selectedOption = selectedCategory?.name ?: "",
                 onOptionSelected = { selectedName ->
-                    selectedCategory = categoryList.find { it.name == selectedName }
+                    selectedCategory = categories.find { it.name == selectedName }
                 }
             )
 

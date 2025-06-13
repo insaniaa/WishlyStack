@@ -32,10 +32,8 @@ fun CategoryScreen(
     val context = LocalContext.current
     val viewModel: CategoryViewModel = viewModel()
 
-    val dataStore1 = SettingDataStore(context)
-    val user by dataStore1.userFlow.collectAsState(initial = User())
-
     val dataStore = UserDataStore(context)
+    val user by dataStore.getUserFlow().collectAsState(initial = User("", "", ""))
 
     val categories = viewModel.categories.value
     val opStatus = viewModel.opStatus.value
@@ -53,15 +51,12 @@ fun CategoryScreen(
 
     LaunchedEffect(opStatus) {
         opStatus?.let { (success, message) ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             if (success) {
                 viewModel.refreshCategoriesFromServer()
             }
             viewModel.clearOpStatus()
         }
     }
-
-
 
     if (showProfilDialog) {
         ProfilDialog(
@@ -76,7 +71,7 @@ fun CategoryScreen(
             TopAppBar(
                 title = { Box(modifier = Modifier.fillMaxWidth()) { Text(text = stringResource(id = R.string.kategori), style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.Center)) } },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(painter = painterResource(id = R.drawable.baseline_arrow_back_ios_24), contentDescription = stringResource(id = R.string.kembali)) } },
-                actions = { IconButton(onClick = { showAddDialog = true }) { Icon(painter = painterResource(id = R.drawable.baseline_add_circle_outline_24), contentDescription = stringResource(id = R.string.tambah_kategori)) } }
+//                actions = { IconButton(onClick = { showAddDialog = true }) { Icon(painter = painterResource(id = R.drawable.baseline_add_circle_outline_24), contentDescription = stringResource(id = R.string.tambah_kategori)) } }
             )
         },
         bottomBar = {
@@ -113,12 +108,12 @@ fun CategoryScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(text = category.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                            IconButton(onClick = {
-                                selectedCategoryToDelete = category
-                                showDeleteDialog = true
-                            }) {
-                                Icon(painter = painterResource(id = R.drawable.baseline_delete_24), contentDescription = stringResource(id = R.string.hapus))
-                            }
+//                            IconButton(onClick = {
+//                                selectedCategoryToDelete = category
+//                                showDeleteDialog = true
+//                            }) {
+////                                Icon(painter = painterResource(id = R.drawable.baseline_delete_24), contentDescription = stringResource(id = R.string.hapus))
+//                            }
                         }
                     }
                 }
@@ -147,7 +142,7 @@ fun CategoryScreen(
                     selectedCategoryToDelete?.let { category ->
                         viewModel.isCategoryUsedInWishlistFromApi(user.email, category.id) { isUsed ->
                             if (isUsed) {
-                                Toast.makeText(context, context.getString(R.string.kategori_digunakan), Toast.LENGTH_SHORT).show()
+//                                Toast.makeText(context, context.getString(R.string.kategori_digunakan), Toast.LENGTH_SHORT).show()
                                 viewModel.deleteCategory(category.id)
                                 showDeleteDialog = false
                                 selectedCategoryToDelete = null
@@ -163,7 +158,6 @@ fun CategoryScreen(
                         }
                     }
                 }
-
             )
         }
     }

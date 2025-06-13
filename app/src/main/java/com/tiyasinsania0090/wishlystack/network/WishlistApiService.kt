@@ -4,6 +4,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tiyasinsania0090.wishlystack.model.ApiListResponse
 import com.tiyasinsania0090.wishlystack.model.ApiPostResponse
+import com.tiyasinsania0090.wishlystack.model.ApiResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Retrofit
@@ -61,14 +62,15 @@ interface WishlistApiService {
 
     @DELETE("wishlist/{id}")
     suspend fun deleteWish(
-        @Path("id") id: Int
+        @Header("X-User-ID") userId: String,
+        @Path("id") id: Int,
     ): ApiPostResponse
 
     @Multipart
     @POST("kategori/tambah")
     suspend fun addCategory(
         @Part("name") name: String
-    ): ApiPostResponse
+    ): ApiResponse
 
     @DELETE("kategori/{id}")
     suspend fun deleteCategory(
