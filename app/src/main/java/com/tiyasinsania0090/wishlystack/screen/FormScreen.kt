@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,9 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
 import com.tiyasinsania0090.wishlystack.R
-import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.component.SimpleDropdownSelector
 import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.User
@@ -39,30 +36,23 @@ import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 fun FormScreen(
     onListClick: () -> Unit,
     onInfoClick: () -> Unit,
-    onCategoryClick: () -> Unit
 ) {
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
 
-    // --- State dari ViewModel (hanya untuk mengambil daftar kategori) ---
     val kategorilist by viewModel.kategoriList.collectAsState()
     val priorityOptions = listOf("Low", "Medium", "High")
 
-    // Mengambil info user dari DataStore
     val dataStore = SettingDataStore(context)
     val user by dataStore.userFlow.collectAsState(initial = User())
 
-    // ================== PERUBAHAN STRUKTUR UTAMA ==================
-    // State untuk setiap field form sekarang dikelola secara lokal di sini,
-    // sama seperti pada EditScreen.
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
-    var priority by remember { mutableStateOf("Low") } // Beri nilai awal
+    var priority by remember { mutableStateOf("Low") }
     var description by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    // =============================================================
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -71,14 +61,6 @@ fun FormScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            BottomBar(
-                currentScreen = "form",
-                onFormClick = { /* Stay on form */ },
-                onListClick = onListClick,
-                onCategoryClick = onCategoryClick
-            )
-        },
         topBar = {
             TopAppBar(
                 title = {
@@ -111,14 +93,12 @@ fun FormScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // --- UI GAMBAR (Sama seperti EditScreen) ---
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 SubcomposeAsyncImage(
-                    model = imageUri, // Langsung dari state URI
+                    model = imageUri,
                     contentDescription = "Gambar Terpilih",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(150.dp).clip(RoundedCornerShape(12.dp)),
-                    // Tampilkan placeholder jika gambar belum dipilih
                     loading = { CircularProgressIndicator() },
                     error = {
                         Box(modifier = Modifier
@@ -159,7 +139,6 @@ fun FormScreen(
 
             Button(
                 onClick = {
-                    // Validasi menggunakan state lokal
                     val isImageSelected = imageUri != null
                     val isNameValid = name.isNotBlank()
                     val isCategoryValid = selectedCategory != null
@@ -182,7 +161,6 @@ fun FormScreen(
                             }
                         )
                     } else {
-                        // Beri tahu pengguna apa yang salah
                         val errorMessage = when {
                             !isImageSelected -> "Silakan pilih gambar terlebih dahulu"
                             !isNameValid -> "Nama wishlist tidak boleh kosong"

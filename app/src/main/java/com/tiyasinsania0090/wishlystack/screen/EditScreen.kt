@@ -4,8 +4,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,7 +40,6 @@ fun EditScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
     val categoryList by viewModel.kategoriList.collectAsState()
-    // PERBAIKAN: Sesuaikan dengan aturan validasi di server
     val priorityList = listOf("Low", "Medium", "High")
 
     var wish by remember { mutableStateOf<Wish?>(null) }
@@ -146,7 +143,6 @@ fun EditScreen(
                             priority = priority,
                             description = description
                         )
-                        // Gunakan fungsi updateWish dari ViewModel
                         viewModel.updateWish(
                             wish = updatedWish,
                             newImageUri = newImageUri,

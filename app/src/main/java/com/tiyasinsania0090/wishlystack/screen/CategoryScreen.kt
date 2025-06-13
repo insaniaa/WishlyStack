@@ -19,7 +19,10 @@ import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.model.Category
 import com.tiyasinsania0090.wishlystack.model.User
 import com.tiyasinsania0090.wishlystack.util.SettingDataStore
-import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
+import com.tiyasinsania0090.wishlystack.util.UserDataStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,30 +30,45 @@ fun CategoryScreen(
     navController: NavHostController,
 ) {
     val context = LocalContext.current
-    val factory = ViewModelFactory(context)
-    val viewModel: CategoryViewModel = viewModel(factory = factory)
+    val viewModel: CategoryViewModel = viewModel()
 
-    val dataStore = SettingDataStore(context)
-    val user by dataStore.userFlow.collectAsState(initial = User())
+    val dataStore1 = SettingDataStore(context)
+    val user by dataStore1.userFlow.collectAsState(initial = User())
 
-    val categories by viewModel.categories.collectAsState()
-    val opStatus by viewModel.opStatus.collectAsState()
+    val dataStore = UserDataStore(context)
+
+    val categories = viewModel.categories.value
+    val opStatus = viewModel.opStatus.value
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedCategoryToDelete by remember { mutableStateOf<Category?>(null) }
 
-    LaunchedEffect(user.email) {
-        if (user.email.isNotEmpty()) {
-            viewModel.refreshCategoriesFromServer(user.email)
-        }
+    var showProfilDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshCategoriesFromServer()
     }
+
 
     LaunchedEffect(opStatus) {
         opStatus?.let { (success, message) ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            if (success) {
+                viewModel.refreshCategoriesFromServer()
+            }
             viewModel.clearOpStatus()
         }
+    }
+
+
+
+    if (showProfilDialog) {
+        ProfilDialog(
+            user = user,
+            onDismissRequest = { showProfilDialog = false },
+            navController = navController
+        )
     }
 
     Scaffold(
@@ -64,9 +82,17 @@ fun CategoryScreen(
         bottomBar = {
             BottomBar(
                 currentScreen = "category",
-                onFormClick = { navController.navigate(Screen.Form.route) },
                 onListClick = { navController.navigate(Screen.Wishlist.route) },
-                onCategoryClick = { /* Stay on category */ }
+                onCategoryClick = { /* Tetap di halaman kategori */ },
+                onProfileClick = {
+                    if (user.email.isNotEmpty()) {
+                        showProfilDialog = true
+                    } else {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            signIn(context, dataStore)
+                        }
+                    }
+                }
             )
         },
     ) { padding ->
@@ -104,8 +130,9 @@ fun CategoryScreen(
                 showDialog = true,
                 onDismiss = { showAddDialog = false },
                 onConfirm = { categoryName ->
-                    viewModel.addCategory(user.email, categoryName)
+                    viewModel.addCategory(categoryName)
                     showAddDialog = false
+                    viewModel.refreshCategoriesFromServer()
                 }
             )
         }
@@ -118,19 +145,25 @@ fun CategoryScreen(
                 },
                 onConfirmation = {
                     selectedCategoryToDelete?.let { category ->
-                        viewModel.isCategoryUsedInWishlist(category.id) { isUsed ->
+                        viewModel.isCategoryUsedInWishlistFromApi(user.email, category.id) { isUsed ->
                             if (isUsed) {
                                 Toast.makeText(context, context.getString(R.string.kategori_digunakan), Toast.LENGTH_SHORT).show()
+                                viewModel.deleteCategory(category.id)
                                 showDeleteDialog = false
                                 selectedCategoryToDelete = null
+                                viewModel.refreshCategoriesFromServer()
+
                             } else {
-                                viewModel.deleteCategory(user.email, category.id)
+                                viewModel.deleteCategory(category.id)
+                                viewModel.refreshCategoriesFromServer()
                                 showDeleteDialog = false
                                 selectedCategoryToDelete = null
+
                             }
                         }
                     }
                 }
+
             )
         }
     }

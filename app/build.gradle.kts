@@ -52,7 +52,8 @@ android {
 }
 
 dependencies {
-
+    
+    implementation(libs.converter.scalars)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -64,17 +65,25 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.compose.material)
+
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.firebase.firestore.ktx)
     ksp(libs.androidx.room.compiler)
+
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
     implementation(libs.retrofit)
-    implementation(libs.converter.scalars)
+    implementation(libs.converter.moshi) // <-- PERBAIKAN: Tambahkan ini
+    implementation(libs.moshi.kotlin)     // <-- PERBAIKAN: Tambahkan ini
+
     implementation(libs.coil.compose)
-    implementation(libs.converter.moshi)
-    implementation(libs.moshi.kotlin)
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+
+    implementation(libs.firebase.firestore.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -82,5 +91,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }

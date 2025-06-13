@@ -16,9 +16,9 @@ import com.tiyasinsania0090.wishlystack.R
 @Composable
 fun BottomBar(
     currentScreen: String,
-    onFormClick: () -> Unit,
     onListClick: () -> Unit,
-    onCategoryClick: () -> Unit
+    onCategoryClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
     BottomAppBar(
         tonalElevation = 4.dp
@@ -31,12 +31,6 @@ fun BottomBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             BottomBarItem(
-                iconResId = R.drawable.baseline_add_circle_outline_24,
-                label = stringResource(R.string.tambah),
-                isSelected = currentScreen == "form",
-                onClick = onFormClick
-            )
-            BottomBarItem(
                 iconResId = R.drawable.baseline_event_note_24,
                 label = stringResource(R.string.wishlist),
                 isSelected = currentScreen == "list",
@@ -47,6 +41,12 @@ fun BottomBar(
                 label = stringResource(R.string.kategori),
                 isSelected = currentScreen == "category",
                 onClick = onCategoryClick
+            )
+            BottomBarItem(
+                iconResId = R.drawable.baseline_account_circle_24,
+                label = stringResource(R.string.profil),
+                isSelected = currentScreen == "profile",
+                onClick = onProfileClick
             )
         }
     }

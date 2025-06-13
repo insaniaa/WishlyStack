@@ -33,7 +33,6 @@ fun DetailScreen(
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
 
-    // Mengambil info user untuk otorisasi
     val dataStore = SettingDataStore(context)
     val user by dataStore.userFlow.collectAsState(initial = User())
 
@@ -150,22 +149,19 @@ fun DetailScreen(
         }
     }
 
-    // ================== PERBAIKAN LOGIKA DELETE DI SINI ==================
     if (showDialog && wish != null) {
         DisplayAlertDialog(
             onDismissRequest = { showDialog = false },
             onConfirmation = {
-                // Panggil fungsi delete yang baru dari ViewModel
-                viewModel.deleteWishFromServer(wish) { success, message ->
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    if (success) {
-                        showDialog = false
-                        // Kembali ke halaman sebelumnya setelah berhasil hapus
-                        navController.popBackStack()
-                    }
-                }
+//                viewModel.deleteWishFromServer(wish) { success, message ->
+//                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//                    if (success) {
+//                        showDialog = false
+//
+//                        navController.popBackStack()
+//                    }
+//                }
             }
         )
     }
-    // ====================================================================
 }

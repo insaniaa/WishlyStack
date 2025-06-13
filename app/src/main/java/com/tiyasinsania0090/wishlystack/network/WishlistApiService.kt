@@ -30,19 +30,14 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 interface WishlistApiService {
-    // Fungsi ini mengembalikan DAFTAR Wish
     @GET("wishlist")
     suspend fun getWishlist(
         @Header("X-User-ID") userId: String
     ): ApiListResponse
 
-    // Fungsi ini mengembalikan DAFTAR Category
     @GET("kategori")
-    suspend fun getCategories(
-        @Header("X-User-ID") userId: String
-    ): ApiListResponse
+    suspend fun getCategories(): ApiListResponse
 
-    // Fungsi ini mengembalikan SATU Wish yang baru dibuat
     @Multipart
     @POST("wishlist/tambah")
     suspend fun addWish(
@@ -56,30 +51,27 @@ interface WishlistApiService {
     ): ApiPostResponse
 
     @Multipart
-    @POST("wishlist/{id}") // Kirim sebagai POST ke endpoint dengan ID
+    @POST("wishlist/{id}")
     suspend fun updateWish(
         @Path("id") id: Int,
         @Header("X-User-ID") userId: String,
-        @PartMap parts: Map<String, @JvmSuppressWildcards RequestBody>, // Untuk mengirim data teks dan _method=PUT
-        @Part picture: MultipartBody.Part? = null // Gambar bersifat opsional saat update
+        @PartMap parts: Map<String, @JvmSuppressWildcards RequestBody>,
+        @Part picture: MultipartBody.Part? = null
     ): ApiPostResponse
 
     @DELETE("wishlist/{id}")
     suspend fun deleteWish(
-        @Header("X-User-ID") userId: String,
         @Path("id") id: Int
     ): ApiPostResponse
 
     @Multipart
     @POST("kategori/tambah")
     suspend fun addCategory(
-        @Header("X-User-ID") userId: String,
-        @Part("name") name: RequestBody
+        @Part("name") name: String
     ): ApiPostResponse
 
     @DELETE("kategori/{id}")
     suspend fun deleteCategory(
-        @Header("X-User-ID") userId: String,
         @Path("id") id: Int
     ): ApiPostResponse
 }
@@ -90,7 +82,6 @@ object WishlistApi {
     }
 
     fun getWishlistImageUrl(imagePath: String): String {
-        // Langsung gabungkan base URL dengan path dari server
         return "$BASE_IMAGE_URL$imagePath"
     }
 }

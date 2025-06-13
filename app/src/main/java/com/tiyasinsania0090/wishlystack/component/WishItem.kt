@@ -39,7 +39,6 @@ fun WishItem(
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            // GANTI AsyncImage DENGAN SubcomposeAsyncImage
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(WishlistApi.getWishlistImageUrl(wish.picture ?: ""))
@@ -52,7 +51,6 @@ fun WishItem(
                     .height(if (isGrid) 120.dp else 180.dp)
                     .clip(RoundedCornerShape(12.dp)),
 
-                // GUNAKAN BLOK 'loading' UNTUK MENAMPILKAN CircularProgressIndicator
                 loading = {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -62,7 +60,6 @@ fun WishItem(
                     }
                 },
 
-                // Parameter 'error' tetap sama
                 error = {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_broken_image_24),

@@ -55,7 +55,7 @@ class WishViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             _apiWishlistState.value = ApiStatus.Loading
             try {
-                val categoryResponse = WishlistApi.service.getCategories(userId)
+                val categoryResponse = WishlistApi.service.getCategories()
                 if (categoryResponse.status) {
                     val categoryListType = Types.newParameterizedType(List::class.java, Category::class.java)
                     val adapter = moshi.adapter<List<Category>>(categoryListType)
@@ -104,13 +104,10 @@ class WishViewModel(
                 val priorityPart = priority.toRequestBody("text/plain".toMediaTypeOrNull())
                 val descriptionPart = description.toRequestBody("text/plain".toMediaTypeOrNull())
 
-                // ================== PERBAIKAN UTAMA DI SINI ==================
                 val contentResolver = context.contentResolver
 
-                // 1. Dapatkan tipe MIME asli dari file (misal: "image/png")
                 val mimeType = contentResolver.getType(imageUri)
 
-                // 2. Dapatkan nama file asli dari URI
                 var fileName = "image.tmp"
                 val cursor: Cursor? = contentResolver.query(imageUri, null, null, null, null)
                 cursor?.use {
@@ -126,12 +123,8 @@ class WishViewModel(
                 val file = File(context.cacheDir, fileName)
                 inputStream?.copyTo(file.outputStream())
 
-                // 3. Gunakan tipe MIME asli saat membuat RequestBody
                 val requestFile = file.asRequestBody(mimeType?.toMediaTypeOrNull())
-
-                // 4. Buat MultipartBody.Part dengan nama file asli
                 val body = MultipartBody.Part.createFormData("picture", file.name, requestFile)
-                // ====================================================================
 
                 val response = WishlistApi.service.addWish(
                     userId, namePart, categoryIdPart, pricePart, priorityPart, descriptionPart, body
@@ -160,7 +153,6 @@ class WishViewModel(
         }
     }
 
-    // --- State dan fungsi lain ---
     val name = MutableStateFlow("")
     val selectedCategoryId = MutableStateFlow<Int?>(null)
     val price = MutableStateFlow("")
@@ -176,7 +168,6 @@ class WishViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     suspend fun getWishById(id: Int): Wish? = dao.getWishById(id)
 
-    // Hapus fungsi updateWish yang lama, ganti dengan yang ini
     fun updateWish(
         wish: Wish,
         newImageUri: Uri? = null,
@@ -184,9 +175,7 @@ class WishViewModel(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Siapkan data teks dalam bentuk Map
                 val parts: MutableMap<String, RequestBody> = mutableMapOf(
-                    // Tambahkan _method "PUT" agar Laravel tahu ini adalah operasi update
                     "_method" to "PUT".toRequestBody("text/plain".toMediaTypeOrNull()),
                     "name" to wish.name.toRequestBody("text/plain".toMediaTypeOrNull()),
                     "categoryId" to wish.categoryId.toString().toRequestBody("text/plain".toMediaTypeOrNull()),
@@ -195,7 +184,6 @@ class WishViewModel(
                     "description" to (wish.description ?: "").toRequestBody("text/plain".toMediaTypeOrNull())
                 )
 
-                // Siapkan file gambar jika ada yang baru
                 var imagePart: MultipartBody.Part? = null
                 if (newImageUri != null) {
                     val contentResolver = context.contentResolver
@@ -215,7 +203,6 @@ class WishViewModel(
                     imagePart = MultipartBody.Part.createFormData("picture", file.name, requestFile)
                 }
 
-                // Panggil service API
                 val response = WishlistApi.service.updateWish(
                     id = wish.id,
                     userId = wish.userId,
@@ -224,7 +211,7 @@ class WishViewModel(
                 )
 
                 if (response.status) {
-                    retrieveDataFromApi(wish.userId) // Refresh data
+                    retrieveDataFromApi(wish.userId)
                     launch(Dispatchers.Main) { onResult(true, response.message) }
                 } else {
                     launch(Dispatchers.Main) { onResult(false, response.message) }
@@ -233,33 +220,7 @@ class WishViewModel(
                 launch(Dispatchers.Main) { onResult(false, e.message ?: "Gagal memperbarui data") }
             }
         }
-    }
 
-    fun deleteWishFromServer(
-        wish: Wish, // Kita butuh seluruh objek wish untuk mendapatkan userId
-        onResult: (Boolean, String) -> Unit
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                // Panggil service API untuk menghapus data di server
-                val response = WishlistApi.service.deleteWish(
-                    userId = wish.userId,
-                    id = wish.id
-                )
 
-                if (response.status) {
-                    // Jika di server berhasil, hapus juga dari database lokal
-                    dao.deleteById(wish.id)
-                    // Muat ulang data dari server agar UI update
-                    retrieveDataFromApi(wish.userId)
-                    launch(Dispatchers.Main) { onResult(true, response.message) }
-                } else {
-                    launch(Dispatchers.Main) { onResult(false, response.message) }
-                }
-            } catch (e: Exception) {
-                Log.e("DELETE_WISH_ERROR", "Exception: ${e.message}", e)
-                launch(Dispatchers.Main) { onResult(false, e.message ?: "Gagal menghapus data") }
-            }
-        }
     }
 }

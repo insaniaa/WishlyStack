@@ -53,4 +53,6 @@
     <string name="edit" translatable="false">Edit</string>
     <string name="details" ranslatable="false">Details</string>
     <string name="tambah">Tambah</string>
+    <string name="profil" translatable="false">Profil</string>
+    <string name="logout" translatable="false">Logout</string>
 </resources>

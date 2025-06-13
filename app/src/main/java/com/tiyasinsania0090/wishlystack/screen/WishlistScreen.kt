@@ -1,5 +1,8 @@
 package com.tiyasinsania0090.wishlystack.screen
 
+import android.content.Context
+import androidx.credentials.GetCredentialRequest
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -11,6 +14,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,31 +30,40 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-// PERUBAHAN: Ganti import User dari Firebase ke model lokal Anda
 import com.tiyasinsania0090.wishlystack.model.User
 import com.tiyasinsania0090.wishlystack.R
 import com.tiyasinsania0090.wishlystack.component.BottomBar
 import com.tiyasinsania0090.wishlystack.component.WishItem
-import com.tiyasinsania0090.wishlystack.util.SettingDataStore
 import com.tiyasinsania0090.wishlystack.util.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.credentials.CustomCredential
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.tiyasinsania0090.wishlystack.util.UserDataStore
+import androidx.credentials.CredentialManager
+import com.tiyasinsania0090.wishlystack.util.SettingDataStore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WishlistScreen(navController: NavHostController) {
-    val dataStore = SettingDataStore(LocalContext.current)
-    val showList by dataStore.layoutFlow.collectAsState(true)
-    // Sekarang `User()` akan merujuk ke data class yang benar
-    val user by dataStore.userFlow.collectAsState(initial = User())
-
     val context = LocalContext.current
+    val dataStore1 = SettingDataStore(context)
+
+    val dataStore = UserDataStore(context)
+
+    val showList by dataStore1.layoutFlow.collectAsState(true)
+    val user by dataStore.getUserFlow().collectAsState(initial = User("", "", ""))
+
     val factory = ViewModelFactory(context)
     val viewModel: WishViewModel = viewModel(factory = factory)
     val apiStatus by viewModel.apiWishlistState.collectAsState()
 
-    // Membuat layar ini me-refresh data setiap kali ia kembali aktif (ON_RESUME)
+    var showProfilDialog by remember { mutableStateOf(false) }
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, user.email) {
         val observer = LifecycleEventObserver { _, event ->
@@ -69,6 +83,15 @@ fun WishlistScreen(navController: NavHostController) {
         if (user.email.isNotEmpty()) {
             viewModel.retrieveDataFromApi(user.email)
         }
+    }
+
+
+    if (showProfilDialog) {
+        ProfilDialog(
+            user = user,
+            onDismissRequest = { showProfilDialog = false },
+            navController = navController
+        )
     }
 
     Scaffold(
@@ -95,7 +118,7 @@ fun WishlistScreen(navController: NavHostController) {
                 actions = {
                     IconButton(onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
-                            dataStore.saveLayout(!showList)
+                            dataStore1.saveLayout(!showList)
                         }
                     }) {
                         Icon(
@@ -109,12 +132,35 @@ fun WishlistScreen(navController: NavHostController) {
                 }
             )
         },
+
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate(Screen.Form.route) },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.tambah),
+                    tint = Color.White
+                )
+            }
+        },
+
         bottomBar = {
             BottomBar(
                 currentScreen = "wishlist",
-                onFormClick = { navController.navigate(Screen.Form.route) },
-                onListClick = { /* Stay on wishlist */ },
-                onCategoryClick = { navController.navigate(Screen.Category.route) }
+                onListClick = { /* Tetap di halaman wishlist */ },
+                onCategoryClick = { navController.navigate(Screen.Category.route) },
+                onProfileClick = {
+                    if (user.email.isNotEmpty()) {
+                        showProfilDialog = true
+                    } else {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            signIn(context, dataStore)
+                        }
+                    }
+                }
+
             )
 
         },
@@ -184,11 +230,10 @@ fun WishlistScreen(navController: NavHostController) {
                     }
                 }
             }
-
-            else -> {}
         }
     }
 }
+
 
 @Composable
 fun LoadingScreen(modifier: Modifier = Modifier) {
@@ -197,6 +242,43 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize()
     ) {
         CircularProgressIndicator()
+    }
+}
+
+suspend fun signIn(context: Context, dataStore: UserDataStore) {
+    Log.d("Login", "Masuk ke sini")
+    val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+        .setFilterByAuthorizedAccounts(false)
+        .setServerClientId("869465864358-014br9nnotb2q8gog6iingviov3a8m3k.apps.googleusercontent.com")
+        .build()
+
+    val request: GetCredentialRequest = GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+
+    try {
+        val credentialManager = CredentialManager.create(context)
+        val result = credentialManager.getCredential(context, request)
+        handleSignIn(result, dataStore)
+    } catch (e: GetCredentialException){
+        Log.e("SIGN-IN", "Error: ${e.message}")
+    }
+}
+
+private suspend fun handleSignIn(result: androidx.credentials.GetCredentialResponse, dataStore: UserDataStore) {
+    val credential = result.credential
+    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL){
+        try {
+            val googleId = GoogleIdTokenCredential.createFrom(credential.data)
+            val nama = googleId.displayName ?: ""
+            val email = googleId.id
+            val photoUrl = googleId.profilePictureUri.toString()
+            dataStore.saveData(User(nama, email, photoUrl))
+        } catch (e: GoogleIdTokenParsingException){
+            Log.e("SIGN-IN", "Error: ${e.message}")
+        }
+    }else{
+        Log.e("SIGN-IN", "Error: unrecognized custom credential type.")
     }
 }
 
